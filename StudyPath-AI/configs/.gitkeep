@@ -1,0 +1,2 @@
+# 占位文件：保留 configs 目录结构（LLaMA Factory 训练配置将放于此）
+# 该目录用于存放微调训练 yaml 配置，详见 StudyPath_微调模块骨架设计.md

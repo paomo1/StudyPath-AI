@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" font-family="'Microsoft YaHei','PingFang SC',sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrowW" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#FFFFFF"/>
+    </marker>
+    <style>
+      .title{font-size:30px;font-weight:700;fill:#0F172A;}
+      .sub{font-size:15px;fill:#64748B;}
+      .stage-h{font-size:18px;font-weight:700;fill:#FFFFFF;}
+      .stage-t{font-size:13px;fill:#E2E8F0;}
+      .stage-p{font-size:12px;fill:#CBD5E1;}
+      .lg-h{font-size:17px;font-weight:700;fill:#065F46;}
+      .node-h{font-size:14px;font-weight:700;fill:#064E3B;}
+      .node-t{font-size:11px;fill:#047857;}
+      .tag{font-size:13px;font-weight:700;fill:#FFFFFF;}
+      .tech{font-size:12px;fill:#334155;}
+      .note{font-size:12px;fill:#7C3AED;font-weight:700;}
+    </style>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="0" y="0" width="1280" height="880" fill="#F8FAFC"/>
+
+  <!-- 标题 -->
+  <text x="40" y="48" class="title">StudyPath AI · 留学申请智能规划助手</text>
+  <text x="40" y="72" class="sub">全流程大模型毕设项目架构 — 数据标注 → 模型微调 → 应用开发 → N8N 自动化</text>
+
+  <!-- ===== 四阶段卡片 ===== -->
+  <!-- 阶段一 -->
+  <rect x="40" y="100" width="280" height="150" rx="12" fill="#3B82F6"/>
+  <text x="60" y="130" class="stage-h">阶段一 · 数据标注</text>
+  <text x="60" y="158" class="stage-t">工具：Label Studio</text>
+  <text x="60" y="180" class="stage-t">· 录取案例标注（背景→结果）</text>
+  <text x="60" y="202" class="stage-t">· 文书质量维度评分</text>
+  <text x="60" y="224" class="stage-t">· 选校匹配对标注</text>
+  <text x="60" y="244" class="stage-p">产出：训练/评估数据集</text>
+
+  <!-- 阶段二 -->
+  <rect x="340" y="100" width="280" height="150" rx="12" fill="#8B5CF6"/>
+  <text x="360" y="130" class="stage-h">阶段二 · 模型微调</text>
+  <text x="360" y="158" class="stage-t">工具：LLaMA Factory + LoRA</text>
+  <text x="360" y="180" class="stage-t">基座：Qwen2.5-7B-Instruct</text>
+  <text x="360" y="202" class="stage-t">· 文书生成模型微调</text>
+  <text x="360" y="224" class="stage-t">· 量化部署</text>
+  <text x="360" y="244" class="stage-p">产出：领域微调权重（+5分）</text>
+
+  <!-- 阶段三 -->
+  <rect x="640" y="100" width="280" height="150" rx="12" fill="#10B981"/>
+  <text x="660" y="130" class="stage-h">阶段三 · 应用开发</text>
+  <text x="660" y="158" class="stage-t">LangChain 1.x + LangGraph</text>
+  <text x="660" y="180" class="stage-t">· RAG 院校知识库（Chroma）</text>
+  <text x="660" y="202" class="stage-t">· 多智能体协作编排</text>
+  <text x="660" y="224" class="stage-t">· Gradio 前端界面</text>
+  <text x="660" y="244" class="stage-p">产出：可运行 Demo</text>
+
+  <!-- 阶段四 -->
+  <rect x="940" y="100" width="280" height="150" rx="12" fill="#F59E0B"/>
+  <text x="960" y="130" class="stage-h">阶段四 · N8N 自动化</text>
+  <text x="960" y="158" class="stage-t">工具：n8n 工作流</text>
+  <text x="960" y="180" class="stage-t">· 申请进度定时提醒</text>
+  <text x="960" y="202" class="stage-t">· 材料清单自动推送</text>
+  <text x="960" y="224" class="stage-t">· 新院校数据入库</text>
+  <text x="960" y="244" class="stage-p">产出：端到端自动化（+5分）</text>
+
+  <!-- 阶段连接箭头 -->
+  <line x1="320" y1="175" x2="338" y2="175" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="620" y1="175" x2="638" y2="175" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="920" y1="175" x2="938" y2="175" stroke="#475569" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- ===== 阶段三 LangGraph 多智能体放大图 ===== -->
+  <rect x="40" y="290" width="1180" height="290" rx="14" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+  <text x="64" y="322" class="lg-h">阶段三核心 · LangGraph 多智能体编排（Supervisor 调度）</text>
+
+  <!-- Supervisor -->
+  <rect x="110" y="380" width="180" height="120" rx="10" fill="#065F46"/>
+  <text x="200" y="425" text-anchor="middle" class="node-h" fill="#FFFFFF">Supervisor</text>
+  <text x="200" y="450" text-anchor="middle" class="node-t" fill="#A7F3D0">调度中枢</text>
+  <text x="200" y="472" text-anchor="middle" class="node-t" fill="#A7F3D0">路由 / 汇总</text>
+
+  <!-- 4 Agents -->
+  <rect x="400" y="350" width="200" height="95" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+  <text x="500" y="385" text-anchor="middle" class="node-h">背景评估 Agent</text>
+  <text x="500" y="410" text-anchor="middle" class="node-t">多模态 OCR 解析</text>
+  <text x="500" y="430" text-anchor="middle" class="node-t">成绩单 / 简历</text>
+
+  <rect x="400" y="465" width="200" height="95" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+  <text x="500" y="500" text-anchor="middle" class="node-h">选校推荐 Agent</text>
+  <text x="500" y="525" text-anchor="middle" class="node-t">RAG 检索院校库</text>
+  <text x="500" y="545" text-anchor="middle" class="node-t">三档 + 录取概率</text>
+
+  <rect x="720" y="350" width="200" height="95" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+  <text x="820" y="385" text-anchor="middle" class="node-h">文书生成 Agent</text>
+  <text x="820" y="410" text-anchor="middle" class="node-t">调用微调模型</text>
+  <text x="820" y="430" text-anchor="middle" class="node-t">PS / CV / 推荐信</text>
+
+  <rect x="720" y="465" width="200" height="95" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+  <text x="820" y="500" text-anchor="middle" class="node-h">时间规划 Agent</text>
+  <text x="820" y="525" text-anchor="middle" class="node-t">拆解申请节点</text>
+  <text x="820" y="545" text-anchor="middle" class="node-t">生成时间线</text>
+
+  <!-- 连接：Supervisor -> Agents -->
+  <line x1="290" y1="420" x2="398" y2="395" stroke="#047857" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="290" y1="440" x2="398" y2="512" stroke="#047857" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="290" y1="440" x2="718" y2="395" stroke="#047857" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="290" y1="440" x2="718" y2="512" stroke="#047857" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- 右侧数据流标注 -->
+  <text x="960" y="370" class="tech" fill="#065F46">⬆ 输入：学生画像 / 目标</text>
+  <text x="960" y="400" class="tech" fill="#065F46">⤵ 输出：选校方案</text>
+  <text x="960" y="430" class="tech" fill="#065F46">    + 文书初稿</text>
+  <text x="960" y="460" class="tech" fill="#065F46">    + 申请时间线</text>
+  <text x="960" y="500" class="note">知识库：Chroma 向量库</text>
+  <text x="960" y="524" class="note">（50+ 院校 / 100+ 案例）</text>
+  <text x="960" y="548" class="note">大模型 API：Qwen / DeepSeek</text>
+
+  <!-- ===== 加分项标记 ===== -->
+  <rect x="40" y="610" width="280" height="56" rx="10" fill="#0F172A"/>
+  <text x="180" y="644" text-anchor="middle" class="tag">全流程项目 +10 分</text>
+  <rect x="340" y="610" width="280" height="56" rx="10" fill="#0F172A"/>
+  <text x="480" y="644" text-anchor="middle" class="tag">模型微调 +5 分</text>
+  <rect x="640" y="610" width="280" height="56" rx="10" fill="#0F172A"/>
+  <text x="780" y="644" text-anchor="middle" class="tag">N8N / Dify 编排 +5 分</text>
+  <rect x="940" y="610" width="280" height="56" rx="10" fill="#0F172A"/>
+  <text x="1080" y="644" text-anchor="middle" class="tag">多项目 (Dify MVP) +5 分</text>
+
+  <!-- ===== 底部技术栈 ===== -->
+  <rect x="40" y="690" width="1180" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="60" y="718" class="tech" font-weight="700">核心技术（必须）：</text>
+  <text x="220" y="718" class="tech">LangChain 1.x · LangGraph · RAG · Chroma 向量库 · Qwen/DeepSeek API</text>
+  <text x="60" y="744" class="tech" font-weight="700">你已具备：</text>
+  <text x="200" y="744" class="tech">Python/pandas · Git · Docker · Linux · n8n · Dify · 机器学习/深度学习</text>
+
+  <text x="640" y="848" class="sub">数据全部来源于学校官网 / QS·USNews 排名 / 一亩三分地等公开渠道，真实可溯源</text>
+</svg>

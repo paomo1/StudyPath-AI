@@ -1,0 +1,16 @@
+# ===== Excel 临时锁文件（Excel 打开时自动生成，勿提交）=====
+~$*.xlsx
+~$*.xls
+
+# ===== StudyPath-AI 大文件 / 运行时生成物（不进仓库）=====
+StudyPath-AI/cache/
+StudyPath-AI/model/
+StudyPath-AI/pretrained/
+StudyPath-AI/data/raw/
+StudyPath-AI/data/processed/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
