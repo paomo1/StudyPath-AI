@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background:#eef1f6; padding:24px; }
+  .app { max-width: 1180px; margin: 0 auto; background:#fff; border-radius:14px; overflow:hidden;
+         box-shadow:0 8px 30px rgba(0,0,0,.12); border:1px solid #e3e8f0; }
+  .topbar { background:#111827; color:#fff; padding:14px 22px; display:flex; align-items:center; gap:10px; }
+  .dot { width:10px; height:10px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; }
+  .topbar .t { font-size:17px; font-weight:700; }
+  .topbar .s { font-size:13px; color:#9ca3af; margin-left:auto; }
+  .body { display:grid; grid-template-columns: 1.05fr 1fr; gap:0; }
+  .chat { padding:22px; border-right:1px solid #eef1f6; background:#fafbfc; }
+  .q { background:#eef2ff; border:1px solid #c7d2fe; color:#1e3a8a; padding:14px 16px;
+       border-radius:12px 12px 12px 4px; font-size:15px; line-height:1.6; margin-bottom:16px; }
+  .q .lab { font-size:12px; color:#6366f1; font-weight:700; display:block; margin-bottom:4px; }
+  .a { background:#fff; border:1px solid #e5e7eb; padding:16px; border-radius:12px 12px 12px 4px;
+       font-size:14px; line-height:1.7; color:#1f2937; }
+  .a .lab { font-size:12px; color:#059669; font-weight:700; display:block; margin-bottom:6px; }
+  .ret { padding:18px 20px; }
+  .ret .h { font-size:14px; font-weight:700; color:#374151; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .ret .h .badge { background:#111827; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; }
+  .doc { background:#fff; border:1px solid #e5e7eb; border-left:4px solid #6366f1; border-radius:8px;
+         padding:10px 12px; margin-bottom:10px; }
+  .doc.case { border-left-color:#f59e0b; }
+  .doc .meta { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .doc .tag { font-size:11px; font-weight:700; padding:1px 7px; border-radius:8px; background:#eef2ff; color:#4338ca; }
+  .doc.case .tag { background:#fef3c7; color:#92400e; }
+  .doc .src { font-size:11px; color:#6b7280; margin-left:auto; }
+  .doc .txt { font-size:12.5px; line-height:1.55; color:#374151; max-height:54px; overflow:hidden; }
+  .foot { background:#111827; color:#9ca3af; font-size:12px; padding:10px 22px; display:flex; gap:18px; flex-wrap:wrap; }
+  .foot b { color:#e5e7eb; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="dot"></span>
+    <span class="t">StudyPath AI · RAG 检索增强问答</span>
+    <span class="s">Gradio Demo · 真实运行截图</span>
+  </div>
+  <div class="body">
+    <div class="chat">
+      <div class="q"><span class="lab">用户</span>GPA 3.5、雅思 7.0，想申美国 top30 的 CS 硕士，有哪些学校比较稳？</div>
+      <div class="a"><span class="lab">StudyPath AI（基于检索资料回答）</span>
+根据【检索到的资料】，GPA 3.5、雅思 7.0 符合以下美国 CS 强校部分项目的<b>最低或具竞争力的申请要求</b>，但需注意："稳录"需结合整体背景（科研/实习/课程匹配度等），而资料中仅提供最低门槛或录取案例的客观数据，无"保录"概率统计。以下为资料中明确支持该分数段可申且有录取先例的 Top 30 CS 项目（按 CS 专排由高到低）：<br><br>
+✅ <b>CMU</b> — CS 专排 #1（CSRankings 2025）；要求 GPA 3.5（最低）、雅思 7.0（达标）、GRE Recommended。门槛高，需强背景弥补。<br>
+✅ <b>UCSD</b> — CS 专排 #13（QS 2026）；GPA 3.5+（competitive）、雅思 7.0（完全匹配）、GRE Not Required。case_022 有 GPA 3.9 录取佐证。<br>
+✅ <b>Georgia Tech</b> — CS 专排 #7（QS 2026）；GPA 3.5+、雅思 <b>7.5</b>（您的 7.0 略低）、GRE Optional。case_033 有 C9 GPA3.7 录取。<br>
+❌ <b>UCI</b> — CS 专排 #60+，不在 Top 30 范围，不满足要求。<br><br>
+📌 <b>结论</b>：唯一同时满足"CS 专排 Top30 + GPA3.5 门槛 + 雅思7.0 达标"的是 <b>UCSD MS CSE(#13)</b>；CMU 排名更高但需极强补充项；Georgia Tech 雅思未达标暂不建议主申。
+      </div>
+    </div>
+    <div class="ret">
+      <div class="h">检索命中 Top-8 <span class="badge">Chroma 向量库</span></div>
+      <div class="doc case"><div class="meta"><span class="tag">录取案例库</span><span class="src">middlebury.cn</span></div><div class="txt">case_017：Cornell MEng CS。美本 Top40；GPA 3.8+。录取(哥大/芝大/布朗/康奈尔)（2025）。</div></div>
+      <div class="doc case"><div class="meta"><span class="tag">录取案例库</span><span class="src">wholeren.com</span></div><div class="txt">case_031：UIUC Professional MCS。美本 TOP20；GPA 3.7；录取(由 MSCS 调剂 MCS)（2024）。</div></div>
+      <div class="doc"><div class="meta"><span class="tag">院校项目库</span><span class="src">gradsmatch.com</span></div><div class="txt">UCI MCS：QS 2026 #307；GPA 3.6，雅思 7.0；截止 Dec 15；学费 ~$48,384。</div></div>
+      <div class="doc"><div class="meta"><span class="tag">院校项目库</span><span class="src">grad.gatech.edu</span></div><div class="txt">Georgia Tech MS CS：QS 2026 #114(CS #7)；GPA 3.5+，雅思 7.5；截止 Feb 1。</div></div>
+      <div class="doc"><div class="meta"><span class="tag">院校项目库</span><span class="src">cse.ucsd.edu</span></div><div class="txt">UCSD MS CSE：QS 2026 #48(CS #13)；GPA 3.5+，雅思 7.0；GRE Not Required。</div></div>
+      <div class="doc case"><div class="meta"><span class="tag">录取案例库</span><span class="src">liuxue.xdf.cn</span></div><div class="txt">case_022：Stanford/CMU/UCSD/UIUC CS。GPA 3.9+，GRE 325，顶会论文1篇。</div></div>
+      <div class="doc case"><div class="meta"><span class="tag">录取案例库</span><span class="src">youfuliuxue.com</span></div><div class="txt">case_033：Georgia Tech MS CS。C9 GPA 3.7+，托福110+，GRE330+；录取 AD(2026)。</div></div>
+      <div class="doc"><div class="meta"><span class="tag">院校项目库</span><span class="src">csd.cmu.edu</span></div><div class="txt">CMU MS CS：CSRankings #1；GPA 3.5，雅思 7.0，GRE Recommended；学费 ~$60,400。</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <span>基座 <b>qwen-plus</b></span>
+    <span>嵌入 <b>text-embedding-v3</b></span>
+    <span>向量库 <b>Chroma（180 条真实数据）</b></span>
+    <span>检索 <b>0.96s</b></span>
+    <span>生成 <b>23.1s</b></span>
+  </div>
+</div>
+</body>
+</html>

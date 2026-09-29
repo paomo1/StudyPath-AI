@@ -1,0 +1,19 @@
+# ===== 大文件 / 云端现下，不进版本库 =====
+pretrained/
+cache/
+model/
+__pycache__/
+*.pyc
+
+# ===== 环境 =====
+.venv/
+env/
+venv/
+
+# ===== 工具 / 会话 =====
+.workbuddy/
+node_modules/
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db

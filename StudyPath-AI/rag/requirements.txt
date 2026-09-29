@@ -1,0 +1,10 @@
+# StudyPath-AI RAG demo 依赖
+# 在 ai-base 环境里: pip install -r requirements.txt
+langchain
+langchain-openai
+langchain-chroma
+langchain-text-splitters   # langchain 1.x 起拆成独立包
+chromadb
+openpyxl
+langgraph
+gradio                    # 网页版 UI（app_gradio.py）

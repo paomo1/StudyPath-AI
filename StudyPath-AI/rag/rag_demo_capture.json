@@ -1,0 +1,122 @@
+[
+  {
+    "question": "GPA 3.5、雅思 7.0，想申美国 top30 的 CS 硕士，有哪些学校比较稳？",
+    "retrieved": [
+      {
+        "idx": 1,
+        "sheet": "录取案例库",
+        "content": "录取案例 case_017：Cornell University MEng CS。申请者背景：美本Top40 DS&CS档；GPA 3.8+，托福 -，GRE -，论文 5段科研 篇，实习 - 段。录取结果：录取(哥大/芝大/布朗/康奈尔)（2025 年）。",
+        "source": "https://www.middlebury.cn/luqujiebao/15146.html"
+      },
+      {
+        "idx": 2,
+        "sheet": "录取案例库",
+        "content": "录取案例 case_031：University of Illinois Urbana-Champaign Professional MCS。申请者背景：美本 TOP20 CS档；GPA 3.7/4.0，托福 103+，GRE 无GRE，论文 无 篇，实习 科研1段 + 企业实习1段 段。录取结果：录取(由MSCS调剂MCS)（2024 年）。",
+        "source": "https://www.wholeren.com/%E4%BC%8A%E5%88%A9%E8%AF%BA%E4%BC%8A%E5%A4%A7%E5%AD%A6%E5%8E%84%E5%B7%B4%E7%BA%B3-%E9%A6%99%E6%A7%9F%E5%88%86%E6%A0%A1%EF%BC%88uiuc%EF%BC%89%E6%96%B0%E5%AD%A6%E9%99%A2-%E5%B8%8C%E8%B4%9D%E5%B0%94/"
+      },
+      {
+        "idx": 3,
+        "sheet": "院校项目库",
+        "content": "University of California, Irvine (UCI)（University of California, Irvine (UCI)） 的 Master of Computer Science (MCS) 项目（Master (MCS, professional)），位于USA，QS World University Rankings 2026排名 QS 2026 #307 (global); CS #60+。所属学院：Computer Science Department。学制：1.25-2 年。申请截止：Dec 15。最低申请要求：GPA 3.6，托福 80，雅思 7.0 (subscore 6.0)，GRE Not Required / Optional。偏好背景：BS in CS or related; 44 credits。学费：约 USD 48,384 /",
+        "source": "https://gradsmatch.com/programs/university-of-california-irvine/master-of-computer-science-34497"
+      },
+      {
+        "idx": 4,
+        "sheet": "院校项目库",
+        "content": "Georgia Tech（佐治亚理工学院）（Georgia Institute of Technology） 的 MS Computer Science 项目（Master (MS)），位于USA，QS World University Rankings 2026排名 QS 2026 #114 (global); CS #7。所属学院：College of Computing, School of CS。学制：2 年。申请截止：Feb 1 (Fall)。最低申请要求：GPA 3.5+ (competitive)，托福 100，雅思 7.5，GRE Optional。偏好背景：BS in CS or related。学费：约 USD 31,500 / yr (non-resident) 美元/年。标签：Computing Systems; Interactive Intelligence; ",
+        "source": "https://grad.gatech.edu/degree-program/?cmd=view-program&program=86097380"
+      },
+      {
+        "idx": 5,
+        "sheet": "院校项目库",
+        "content": "University of California, San Diego (UCSD)（University of California, San Diego (UCSD)） 的 MS Computer Science and Engineering 项目（Master (MS)），位于USA，QS World University Rankings 2026排名 QS 2026 #48 (global); CS #13。所属学院：CSE Department。学制：2 年。申请截止：Dec 15 (Fall)。最低申请要求：GPA 3.5+ (competitive)，托福 85，雅思 7，GRE Not Required。偏好背景：BS in CS/CE or related。学费：约 USD 37,980 / yr (non-resident) 美元/年。标签：AI; Systems;",
+        "source": "https://cse.ucsd.edu/graduate/admissions"
+      },
+      {
+        "idx": 6,
+        "sheet": "录取案例库",
+        "content": "录取案例 case_022：Stanford / CMU / Columbia / UCSD / UIUC CS 各类 (MS CS 等)。申请者背景：中外合办院校档；GPA 3.9+，托福 -，GRE 325，论文 独立作者国际会议论文1篇 篇，实习 校内TA + 美教授科研 段。录取结果：录取(多校,含Stanford CS)（2024 年）。",
+        "source": "https://liuxue.xdf.cn/blog/tianmimi/blog/5490247.shtml"
+      },
+      {
+        "idx": 7,
+        "sheet": "录取案例库",
+        "content": "录取案例 case_033：Georgia Institute of Technology MS Computer Science (On Campus)。申请者背景：C9本科 CS相关档；GPA 3.7+/4.0 (均分90+)，托福 110+，GRE 330+，论文 无提及 篇，实习 强CS主线背景 段。录取结果：录取AD (Fall 2026)（2026 年）。",
+        "source": "https://www.youfuliuxue.com/p/30511.html"
+      },
+      {
+        "idx": 8,
+        "sheet": "院校项目库",
+        "content": "CMU（卡内基梅隆大学）（Carnegie Mellon University） 的 MS in Computer Science 项目（MS），位于USA，CSRankings 2025 计算机专排 #1排名 1。所属学院：Computer Science (SCS)。学制：1.5-2 年。申请截止：2025-12-10(Fall，以官网当年公布为准)。最低申请要求：GPA 3.5，托福 100，雅思 7.0，GRE Recommended。偏好背景：CS/数学/编程背景优先。学费：约 60400 美元/年。标签：AI;Systems;Theory;Robotics。",
+        "source": "https://csd.cmu.edu/academics/masters/admissions"
+      }
+    ],
+    "answer": "根据【检索到的资料】，GPA 3.5、雅思 7.0 符合以下美国CS强校部分项目的**最低或具竞争力的申请要求**，但需注意：“稳录”需结合整体背景（如科研/实习/课程匹配度等），而资料中仅提供**最低门槛或录取案例的客观数据**，无“保录”或“稳录”概率统计。以下为资料中明确支持该分数段可申且有录取先例的Top 30 CS项目（按CS专排由高到低排序）：\n\n✅ **符合且有录取案例支撑的学校（CS专排均属全球Top 30）：**  \n1. **Carnegie Mellon University（CMU）**  \n　- CS专排：#1（CSRankings 2025）  \n　- 要求：GPA 3.5（明确列为最低要求），雅思 7.0（达标）；GRE Recommended（非强制）  \n　- 注意：虽为顶尖项目，但资料中未提供GPA 3.5+雅思7.0的直接录取案例；其门槛高，需强背景弥补（如论文、强推、高难度课程）。  \n　→ 属“可达但非稳妥”，需强化其他维度。\n\n2. **University of California, San Diego（UCSD）**  \n　- CS专排：#13（QS 2026）  \n　- 要求：GPA 3.5+（competitive），雅思 7.0（完全匹配）；GRE Not Required  \n　- 录取佐证：case_022 中申请者获UCSD CS录取，其GPA 3.9+、GRE 325、有顶会论文；说明UCSD重视综合能力，GPA 3.5属门槛下限，需用科研/实习等弥补。  \n\n3. **Georgia Institute of Technology（Georgia Tech）**  \n　- CS专排：#7（QS 2026）  \n　- 要求：GPA 3.5+（competitive），雅思 7.5（⚠️您的雅思7.0略低于要求）；GRE Optional  \n　- 录取佐证：case_033 中C9学生（GPA 3.7+/4.0，雅思110+）获录；但资料未显示雅思7.0是否被接受——**您的雅思7.0不满足其最低要求（需7.5）**，因此该校当前条件下不建议主申。\n\n4. **University of Illinois Urbana-Champaign（UIUC）**  \n　- 注：QS CS排名未在资料中给出，但UIUC CS长期稳居全美Top 5（US News）、全球Top 10，属公认Top 30 CS强校；资料中虽未列QS CS排名，但case_031明确录取其Professional MCS项目。  \n　- 要求：GPA 3.7（案例中），托福103+（无雅思要求提及）；GRE无要求  \n　- 注意：资料未提供UIUC对雅思的官方要求，也无GPA 3.5+雅思7.0的录取案例；**GPA 3.5低于案例值（3.7），且缺乏雅思适配性依据**，稳妥性较低。\n\n❌ **不满足条件或资料不足的学校：**  \n- Cornell（case_017）：GPA 3.8+，无语言成绩信息，且未提雅思要求；无GPA 3.5案例。  \n- Stanford / CMU / Columbia（case_022）：虽被录取，但申请者GPA 3.9+、GRE 325、有独立作者顶会论文，背景远超您当前条件。  \n- UCI（资料3）：CS专排#60+，不在Top 30范围内，不满足用户“Top 30”要求。\n\n📌 **结论与建议：**  \n- **唯一同时满足“CS专排Top 30 + GPA 3.5门槛 + 雅思7.0达标”的项目是：UCSD MS CSE（#13）**。  \n- CMU虽排名更高（#1），但您的雅思7.0达其最低线，GPA 3.5为底线，**需极强补充项（如2段以上相关科研、高含金量实习、强推）才可能提升成功率**；资料中无类似背景成功案例。  \n- Georgia Tech 雅思要求7.5，您目前不达标，**暂不建议作为主申目标",
+    "top_k": 8,
+    "timing": {
+      "retrieve_s": 0.96,
+      "generate_s": 23.14
+    },
+    "captured_at": "2026-08-21 11:31"
+  },
+  {
+    "question": "CMU 的计算机硕士项目要求和截止日期是什么？",
+    "retrieved": [
+      {
+        "idx": 1,
+        "sheet": "院校项目库",
+        "content": "CMU（卡内基梅隆大学）（Carnegie Mellon University） 的 MS in Computer Science 项目（MS），位于USA，CSRankings 2025 计算机专排 #1排名 1。所属学院：Computer Science (SCS)。学制：1.5-2 年。申请截止：2025-12-10(Fall，以官网当年公布为准)。最低申请要求：GPA 3.5，托福 100，雅思 7.0，GRE Recommended。偏好背景：CS/数学/编程背景优先。学费：约 60400 美元/年。标签：AI;Systems;Theory;Robotics。",
+        "source": "https://csd.cmu.edu/academics/masters/admissions"
+      },
+      {
+        "idx": 2,
+        "sheet": "院校项目库",
+        "content": "Purdue University（Purdue University） 的 MS Computer Science 项目（Master (MS)），位于USA，QS World University Rankings 2026排名 QS 2026 #179 (global); CS #50+。所属学院：Department of Computer Science。学制：2 年。申请截止：Fall Dec 1; Spring Oct 1。最低申请要求：GPA 3.5+ (competitive)，托福 100 (subscore 22)，雅思 7.5，GRE Not Required。偏好背景：BS in CS or related; 30 credits。学费：约 USD 36,480 / yr (non-resident) 美元/年。标签：AI; Systems; Security。",
+        "source": "https://www.cs.purdue.edu/graduate/admission/faq.html"
+      },
+      {
+        "idx": 3,
+        "sheet": "院校项目库",
+        "content": "University of Illinois Urbana-Champaign (UIUC)（University of Illinois Urbana-Champaign (UIUC)） 的 MCS (Professional Master of Computer Science) 项目（Master (MCS, professional)），位于USA，QS World University Rankings 2026排名 QS 2026 #69 (global); CS #5。所属学院：Siebel School of Computing。学制：1.5 年。申请截止：Fall Jan 15 (Chicago Feb 15); Spring Sep 15。最低申请要求：GPA 3.2，托福 100 (some sources 79)，雅思 7.5 (some 6.5)，GRE Not ",
+        "source": "https://siebelschool.illinois.edu/academics/graduate/professional-mcs/app-info"
+      },
+      {
+        "idx": 4,
+        "sheet": "院校项目库",
+        "content": "Brown University（Brown University） 的 Sc.M. Computer Science 项目（Master (Sc.M.)），位于USA，QS World University Rankings 2026排名 QS 2026 #76 (global); CS #40+。所属学院：Computer Science Department。学制：2 年。申请截止：Fall Jan 15; Spring Nov 1。最低申请要求：GPA 3.0-3.5+，托福 105，雅思 8，GRE Not Required (encouraged)。偏好背景：BS in CS or related。学费：约 USD 87,816 / 24mo 美元/年。标签：AI; Human-Centered Computing; Systems。",
+        "source": "https://graduateprograms.brown.edu/graduate-program/computer-science-scm"
+      },
+      {
+        "idx": 5,
+        "sheet": "院校项目库",
+        "content": "University of Manchester（University of Manchester） 的 Advanced Computer Science MSc 项目（Master (MSc)），位于UK，QS World University Rankings 2026排名 QS 2026 #35 (global); CS #50+。所属学院：Department of Computer Science。学制：1 年。申请截止：Staged (Dec 7 / Jun 5 etc.)。最低申请要求：GPA First class (70%) typical，托福 100 (22)，雅思 7.0 (6.5)，GRE Not Required。偏好背景：CS/related honours degree。学费：约 GBP 39,400 / yr 美元/年。标签：AI; Systems; D",
+        "source": "https://www.manchester.ac.uk/study/masters/courses/list/21573/"
+      },
+      {
+        "idx": 6,
+        "sheet": "院校项目库",
+        "content": "NYU（纽约大学）（New York University） 的 MS in Computer Science (Courant) 项目（MS），位于USA，US News 2025 美国综合排名 #30排名 US News 2025 美国综排#30。所属学院：Courant Institute of Mathematical Sciences。学制：1.5-2 年。申请截止：2026-03-01(Fall，以官网为准)。最低申请要求：GPA 3.0(录取平均3.6)，托福 100，雅思 7.0，GRE Recommended。偏好背景：CS/数学/工程背景，需C++/Java与数据结构。学费：约 75000(USD,以官网为准) 美元/年。标签：ML;Theory;Algorithms;NLP。",
+        "source": "https://cs.nyu.edu/home/master/program.html"
+      },
+      {
+        "idx": 7,
+        "sheet": "院校项目库",
+        "content": "University of British Columbia (UBC)（University of British Columbia (UBC)） 的 MSc Computer Science 项目（Master (MSc)），位于Canada，QS World University Rankings 2026排名 QS 2026 #41 (global); CS #20+。所属学院：Department of Computer Science。学制：2 年。申请截止：Dec 15 (MSc Jan 5)。最低申请要求：GPA B+ (76%)，托福 100 (22)，雅思 7.0 (6.5)，GRE Not Required。偏好背景：CS honours or related。学费：约 CAD 10,081 / yr (intl) 美元/年。标签：AI; HCI; Systems。",
+        "source": "https://www.grad.ubc.ca/node/3866"
+      },
+      {
+        "idx": 8,
+        "sheet": "院校项目库",
+        "content": "Nanyang Technological University (NTU)（Nanyang Technological University (NTU)） 的 MSc Computer Science 项目（Master (MSc)），位于Singapore，QS World University Rankings 2026排名 QS 2026 #12 (global); CS top 30。所属学院：School of Computer Science and Engineering。学制：1-1.5 年。申请截止：Feb (main round; open Oct)。最低申请要求：GPA 80% (211/985 78+; dual 80+)，托福 100 (some 79)，雅思 6.5，GRE Not Required。偏好背景：CS/CE/related bachelor。学费",
+        "source": "http://www.65liuxue.com/ntu/news/00246936.html"
+      }
+    ],
+    "answer": "CMU（卡内基梅隆大学）的 MS in Computer Science 项目要求和截止日期如下（依据官方资料）：\n\n**一、最低申请要求：**  \n- GPA：3.5（最低要求）  \n- 语言成绩：托福 100 分，或雅思 7.0 分  \n- GRE：Recommended（非强制，但建议提交）  \n- 背景偏好：计算机科学、数学或编程相关背景优先  \n\n**二、申请截止日期：**  \n- Fall 入学截止日期为 **2025年12月10日**（以官网当年公布为准）  \n\n**三、其他关键信息：**  \n- 所属学院：Computer Science (SCS)  \n- 学制：1.5–2 年  \n- 学费：约 60,400 美元/年  \n- 项目标签：AI；Systems；Theory；Robotics  \n\n来源: https://csd.cmu.edu/academics/masters/admissions",
+    "top_k": 8,
+    "timing": {
+      "retrieve_s": 0.12,
+      "generate_s": 5.53
+    },
+    "captured_at": "2026-08-21 11:31"
+  }
+]

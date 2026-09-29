@@ -14,3 +14,29 @@ __pycache__/
 *.pyc
 *.pyo
 .ipynb_checkpoints/
+
+# ===== 个人/答辩/开发期资产（已移出仓库，不属项目交付）=====
+# 个人求职资产 -> F:\面试准备
+面试准备/
+StudyPath_AI_毕设架构与拿分方案.md
+
+# 答辩展示材料 -> F:\答辩材料
+毕设PPT.pptx
+毕设PPT骨架.html
+答辩讲稿.md
+驾驶舱原型.html
+PPT素材清单.md
+StudyPath-AI/StudyPath-AI-毕设答辩/
+StudyPath-AI/ppt素材/
+
+# 早期开发期脚本与数据 -> F:\归档_留学项目开发期
+append_*.py
+batch_*.json
+data_schema_template.json
+extract_pdf.py
+gen_excel_template.py
+inspect_*.py
+verify_*.py
+院校数据采集*.xlsx
+工程截图/
+毕设说明文档_提取.txt
