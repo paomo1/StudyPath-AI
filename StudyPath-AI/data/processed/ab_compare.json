@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-10-02 18:36:41",
+  "base_model": "/root/StudyPath-AI/pretrained/Qwen2.5-7B-Instruct",
+  "lora_adapter": "/root/StudyPath-AI/model/lora",
+  "method": {
+    "decoding": "greedy (do_sample=False)",
+    "control": "disable_adapter 上下文",
+    "description": "同一个模型对象、同一份基座权重，A 组关闭 LoRA adapter、B 组启用 LoRA adapter，唯一变量为 adapter 是否生效"
+  },
+  "summary": {
+    "n_prompts": 3,
+    "changed_count": 3,
+    "all_changed": true,
+    "changed_names": [
+      "文书规划-SOP开头",
+      "选校策略-选校梯度",
+      "风险评估-录取概率"
+    ],
+    "conclusion": "3/3 组 prompt 在开启 LoRA 后输出发生变化 => 微调权重真实生效"
+  },
+  "items": [
+    {
+      "name": "文书规划-SOP开头",
+      "prompt": "你是一名留学文书顾问，请为申请纽约大学 MS Data Science 的学生写一段 SOP 开头，不超过150字。",
+      "A_base_model": {
+        "text": "在数字化浪潮席卷全球的今天，数据科学作为连接现实世界与数字世界的桥梁，正以前所未有的速度改变着我们的生活方式、工作模式乃至思维方式。作为一名热衷于探索数据背后故事的学子，我深知数据科学不仅是一门学科，更是一种工具，它能够帮助我们从海量信息中提炼出有价值的知识，驱动决策，推动创新。因此，当我在众多顶尖学府中选择纽约大学时，被其在数据科学领域的卓越成就和深厚底蕴深深吸引。在这里，我期待能够深入学习先进的数据分析方法和技术，同时，在多元文化的浸润下，培养跨学科思维和全球视野，为未来的职业生涯奠定坚实基础。",
+        "latency_s": 3.77
+      },
+      "B_base_plus_lora": {
+        "text": "开头：我自小就对数据科学充满兴趣，高中时便开始自学 Python 和 R 语言。本科期间，我主修数学与统计学，并辅修计算机科学。这段经历不仅让我掌握了扎实的理论基础，还培养了我解决实际问题的能力。如今，我渴望在纽约大学继续深造，成为数据科学领域的顶尖人才。",
+        "latency_s": 2.84
+      },
+      "identical": false
+    },
+    {
+      "name": "选校策略-选校梯度",
+      "prompt": "学生本科 GPA 3.6，雅思 6.5，专业背景一般，无发表论文。请给出申请英国硕士的选校梯度建议，分冲刺/主申/保底三档。",
+      "A_base_model": {
+        "text": "根据您提供的信息，学生的GPA为3.6，雅思成绩为6.5，专业背景一般且没有发表过论文。在这样的情况下，选择合适的学校非常重要。下面我会根据您的要求给出一个大致的选校梯度建议。\n\n### 冲刺（排名相对较高，但仍有挑战性的学校）\n\n- **伦敦政治经济学院（LSE）** - 虽然LSE对申请者的学术背景有一定要求，但考虑到其在社会科学领域的强大实力，如果学生能够展示出较强的研究潜力或相关工作经验，仍有机会。\n- **帝国理工学院（Imperial College London）** - 同样，帝国理工对于申请者的学术背景有较高的要求，但在某些领域如工程、科学等，如果学生能够提供额外的支持材料，也有可能获得青睐。\n\n### 主申（排名适中，成功率较高的学校）\n\n- **爱丁堡大学（University of Edinburgh）** - 爱丁堡大学在多个学科领域都有很强的实力，尤其是商科和人文社科方向。GPA 3.6和雅思6.5的成绩在这个学校应该可以达到主申的标准。\n- **曼彻斯特大学（The University of Manchester）** - 曼大在多个学科",
+        "latency_s": 5.93
+      },
+      "B_base_plus_lora": {
+        "text": "冲刺：University of Manchester (GPA: 3.7+); 主申：University of Birmingham (GPA: 3.4-3.6); 保底：University of Leeds (GPA: 3.2+)。数据来源：https://www.graduateschools.com/rankings/master/uk/data-science-and-analytics",
+        "latency_s": 2.76
+      },
+      "identical": false
+    },
+    {
+      "name": "风险评估-录取概率",
+      "prompt": "学生想冲纽约大学 MS Data Science，本科双非，GPA 3.2，两段实习。请客观评估这个申请的录取风险，并给出两项最该补强的点。",
+      "A_base_model": {
+        "text": "纽约大学（NYU）的数据科学硕士项目（MS in Data Science）是一个非常有竞争力的项目，尤其对于国际学生和非传统背景的学生来说更是如此。根据您提供的信息，我们可以对申请的风险进行客观评估，并提出建议来提高申请成功率。\n\n### 申请风险评估\n\n1. **背景因素**：您的本科背景为“双非”院校，这可能在一定程度上影响招生委员会对您学术能力的初步判断。\n2. **GPA**：3.2的GPA在竞争激烈的项目中可能略显不足，尤其是在数据科学领域，通常要求较高的数学和统计学基础。\n3. **实习经验**：虽然您有两段实习经历，但没有具体说明这些实习与数据科学相关联的程度，这可能会影响招生委员会对您实际技能和兴趣的了解。\n4. **标准化考试成绩**：未提及GRE或GMAT成绩，这对申请同样重要，尤其是对于数据科学这样的STEM领域。\n\n### 补强建议\n\n1. **强化数学和统计学基础**：\n   - 考虑参加在线课程或自学相关课程，如线性代数、概率论、统计学等，以证明您具备扎实的数学基础。",
+        "latency_s": 6.02
+      },
+      "B_base_plus_lora": {
+        "text": "本案例：冲校：NYU MS Data Science；背景：双非/3.2 GPA/2段实习；结果：录取。 数据来源：https://www.graduaterecordexaminations.org/data-science#data",
+        "latency_s": 1.87
+      },
+      "identical": false
+    }
+  ]
+}

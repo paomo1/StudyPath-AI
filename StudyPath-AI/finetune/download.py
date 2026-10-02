@@ -7,7 +7,7 @@ AutoDL 云端运行时若无需代理，把下方 HTTP(S)_PROXY 两行注释即�
 import os
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent  # 本文件位于 finetune/，向上两级回到项目根 StudyPath-AI/
 DST = ROOT / "pretrained" / "Qwen2.5-7B-Instruct"
 DST.mkdir(parents=True, exist_ok=True)
 
@@ -31,7 +31,7 @@ def main():
     except ImportError:
         print("[download] 未安装 modelscope，回退到 huggingface-cli ...")
         os.system(f"hf download {REPO} --local-dir {DST}")
-    print("[download] 完成。下一步：llamafactory-cli train configs/qwen_lora_sft.yaml")
+    print("[download] 完成。下一步：llamafactory-cli train finetune/qwen_lora_sft.yaml")
 
 
 if __name__ == "__main__":

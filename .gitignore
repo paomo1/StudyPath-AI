@@ -4,10 +4,14 @@
 
 # ===== StudyPath-AI 大文件 / 运行时生成物（不进仓库）=====
 StudyPath-AI/cache/
-StudyPath-AI/model/
 StudyPath-AI/pretrained/
-StudyPath-AI/data/raw/
-StudyPath-AI/data/processed/
+
+# 基座权重 15GB，云端现下；但 model/lora/ 是微调物证，必须随仓库走
+StudyPath-AI/model/*
+!StudyPath-AI/model/lora/
+
+# data/ 不进忽略：xlsx 是"真实可溯源"的唯一数据底座，
+# train/eval.jsonl 是云端训练包自包含的前提，解禁后 clone 即可复现
 
 # ===== Python =====
 __pycache__/
@@ -30,6 +34,8 @@ StudyPath-AI/StudyPath-AI-毕设答辩/
 StudyPath-AI/ppt素材/
 
 # 早期开发期脚本与数据 -> F:\归档_留学项目开发期
+# 归档目录（含开发期 xlsx / 爬取脚本 / 工程截图），整包不进仓库
+/归档_留学项目开发期/
 append_*.py
 batch_*.json
 data_schema_template.json
@@ -37,6 +43,7 @@ extract_pdf.py
 gen_excel_template.py
 inspect_*.py
 verify_*.py
-院校数据采集*.xlsx
+# 只忽略仓库根目录下那份开发期拷贝；StudyPath-AI/data/raw/ 里的正式数据要进仓库
+/院校数据采集*.xlsx
 工程截图/
 毕设说明文档_提取.txt

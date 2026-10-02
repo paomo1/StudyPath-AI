@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
 """微调训练入口
-对应老师例子"喂入语料训练模型"步骤
+
 推荐方式：用 LLaMA Factory CLI（省事、稳）
-备选方式：用 transformers.Trainer（骨架见下方）
+备选方式：用 transformers.Trainer（骨架见下方，默认不启用）
+
+前置条件：SFT 数据集需先生成 ——
+    python -m annotations.build_sft_data
+（它读 data/raw/院校数据采集.xlsx 构造 180 条 SFT + dataset_info.json）
 """
 from .config import ensure_dirs
 
 
 # ============ 方式 1（强烈推荐）：LLaMA Factory CLI ============
 # 在项目根目录运行：
-#   pip install llamafactory
-#   llamafactory-cli train configs/qwen_lora_sft.yaml
+#   pip install -r finetune/requirements.txt
+#   llamafactory-cli train finetune/qwen_lora_sft.yaml
 #
-# 详见 configs/qwen_lora_sft.yaml
+# 详见 finetune/qwen_lora_sft.yaml
+# 云端一键流程见 finetune/autodl_train.sh
 
 
-# ============ 方式 2：transformers Trainer 骨架 ============
+# ============ 方式 2：transformers Trainer 骨架（默认不启用）============
 def train_with_trainer():
     from datasets import load_dataset
     from transformers import TrainingArguments, Trainer, DataCollatorForLanguageModeling
     from .model import load_base_model, setup_lora
-    from .processed import read_raw_essays, format_alpaca, split_train_eval
     from .config import (
         DATA_PROCESSED, MODEL_OUT, LEARNING_RATE, NUM_EPOCHS,
         BATCH_SIZE, GRAD_ACCUM, WARMUP_RATIO, LOGGING_STEPS, SAVE_STEPS,
@@ -28,12 +32,17 @@ def train_with_trainer():
     )
 
     ensure_dirs()
-    # 1) 数据
-    essays = read_raw_essays()
-    data = format_alpaca(essays)
-    train, evald = split_train_eval(data)
-    ds_train = load_dataset("json", data_files=str(DATA_PROCESSED / "train.jsonl"))["train"]
-    ds_eval  = load_dataset("json", data_files=str(DATA_PROCESSED / "eval.jsonl"))["train"]
+    # 1) 数据：SFT 数据集由 annotations/build_sft_data.py 从 xlsx 生成，
+    #    这里只做「存在性校验 + 读取」，不重复解析原始数据（避免两套逻辑打架）。
+    train_path = DATA_PROCESSED / "train.jsonl"
+    eval_path = DATA_PROCESSED / "eval.jsonl"
+    if not train_path.exists() or not eval_path.exists():
+        raise FileNotFoundError(
+            f"缺少 SFT 数据集：{train_path}\n"
+            "请先运行：python -m annotations.build_sft_data"
+        )
+    ds_train = load_dataset("json", data_files=str(train_path))["train"]
+    ds_eval = load_dataset("json", data_files=str(eval_path))["train"]
 
     # 2) 模型
     model, tokenizer = load_base_model()
@@ -58,7 +67,7 @@ def train_with_trainer():
         logging_steps=LOGGING_STEPS,
         save_steps=SAVE_STEPS,
         bf16=True,
-        evaluation_strategy="steps",
+        eval_strategy="steps",   # 新版 transformers 已由 evaluation_strategy 更名而来
         eval_steps=SAVE_STEPS,
         save_total_limit=2,
         report_to="none",
@@ -74,9 +83,11 @@ def train_with_trainer():
 
 
 def main():
-    # 默认走方式 1（CLI）。要试方式 2，取消下面注释：
+    # 默认走方式 1（CLI，实际训练时用的就是这条）。要试方式 2，取消下面注释：
     # train_with_trainer()
-    print("[train] 见文件顶部说明，推荐：llamafactory-cli train configs/qwen_lora_sft.yaml")
+    ensure_dirs()
+    print("[train] 推荐：llamafactory-cli train finetune/qwen_lora_sft.yaml")
+    print("[train] 云端一键流程：bash finetune/autodl_train.sh（见 finetune/README_AUTODL.md）")
 
 
 if __name__ == "__main__":

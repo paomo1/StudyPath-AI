@@ -58,20 +58,30 @@ def get_embeddings():
     return DashScopeEmbeddings()
 
 
-def build_qa():
-    embeddings = get_embeddings()
-    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
-    retriever = vectordb.as_retriever(
-        search_type="mmr",  # 最大边际相关性：相关 + 多样，避免 4 条都是相似内容
-        search_kwargs={"k": TOP_K, "fetch_k": 20},  # 先取 20 候选再 rerank 出 8 条最相关且多样的
-    )
-    llm = ChatOpenAI(
+def build_llm():
+    """构建对话 LLM（qwen-plus，走 DashScope 的 OpenAI 兼容端点）。
+
+    单独抽出，供需要自定义上下文的调用方复用——典型场景是 demo 取证：
+    用「已经检索好的 docs」生成回答，避免重复检索导致
+    「落盘展示的召回结果」与「真正喂给模型的上下文」不同源。
+    """
+    return ChatOpenAI(
         model=CHAT_MODEL,
         openai_api_key=DASHSCOPE_API_KEY,
         base_url=DASHSCOPE_BASE_URL,
         temperature=0.3,
         max_tokens=1024,
     )
+
+
+def build_qa():
+    embeddings = get_embeddings()
+    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+    retriever = vectordb.as_retriever(
+        search_type="mmr",  # 最大边际相关性：相关 + 多样，避免 4 条都是相似内容
+        search_kwargs={"k": TOP_K, "fetch_k": 20},  # 先取 20 候选再用 MMR 精选出 8 条最相关且多样的
+    )
+    llm = build_llm()
     chain = (
         {
             # 检索前先做别名归一化；question 仍传原文，保证 LLM 看到的就是用户原话
@@ -83,6 +93,16 @@ def build_qa():
         | StrOutputParser()
     )
     return chain
+
+
+def answer_from_docs(question: str, docs) -> str:
+    """基于【已检索好的 docs】生成回答，不再重复检索。
+
+    demo 取证场景专用：让落盘的召回结果与喂给 LLM 的上下文严格同源，
+    避免"展示的是 A 次检索、生成用的是 B 次检索"这种对不上号的情况。
+    """
+    chain = PROMPT | build_llm() | StrOutputParser()
+    return chain.invoke({"context": format_docs(docs), "question": question})
 
 
 def ask(question: str) -> str:

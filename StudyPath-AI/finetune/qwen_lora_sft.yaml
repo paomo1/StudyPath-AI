@@ -22,6 +22,8 @@ preprocessing_num_workers: 4
 ### Output
 output_dir: model/lora
 logging_steps: 10
+# 实物总步数 51（129 训练样本 / (bs1×grad_accum8) = 17 步/epoch × 3 epoch），
+# 51 < 200 故中途不落 checkpoint，仅训练结束时保存最终权重。保持 200 以如实反映当时配置。
 save_steps: 200
 save_total_limit: 2
 plot_loss: true
@@ -37,6 +39,8 @@ bf16: true
 flash_attn: fa2
 
 ### Eval（训练末做一轮）
+# val_size=0.1 从 train.jsonl(144) 切出 15 条做验证监控，129 条参与训练。
+# 对应实测：eval_samples_per_second 13.891 × eval_runtime 1.0798 ≈ 15 条。
 val_size: 0.1
 eval_strategy: steps
 eval_steps: 200

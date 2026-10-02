@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """模型加载与 LoRA 注入
-对应老师例子 src/model.py：把预训练模型配置成符合当前需求（追加微调）
+对应老师例子里「把预训练模型加载进来、再追加 LoRA 适配层」这一环节。
 """
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer

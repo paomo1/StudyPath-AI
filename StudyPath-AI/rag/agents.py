@@ -44,9 +44,12 @@ class State(TypedDict):
     messages: Annotated[List, add_messages]
     query: str
     route: List[str]          # supervisor 决定的 worker 列表
-    school_docs: List[Document]     # 院校库召回的原始 Document 列表
-    admission_docs: List[Document]  # 录取案例库召回的原始 Document 列表
-    essay_docs: List[Document]      # 文书库召回的原始 Document 列表
+    school_docs: List[Document]     # 院校库召回的原始 Document（保留，供来源卡片用）
+    admission_docs: List[Document]  # 录取案例库召回的原始 Document
+    essay_docs: List[Document]      # 文书库召回的原始 Document
+    school_plan: str          # School Worker 的"选校策略"结论（冲刺/稳妥/保底）
+    admission_risk: str       # Admission Worker 的"录取风险评估"结论
+    essay_outline: str        # Essay Worker 的"文书规划"结论
     answer: str
 
 
@@ -96,12 +99,65 @@ def _dedup_docs(docs: List[Document]) -> List[Document]:
     return out
 
 
+# 三个 worker 各自的"专家人设 + 业务动作"——这是相对纯 RAG 的核心亮点
+WORKER_ROLE_PROMPTS = {
+    "school": (
+        "你是留学选校策略师。基于【检索资料】中的真实院校项目信息，为用户做选校定位。\n"
+        "要求：\n"
+        "1. 先按用户硬性条件(国家/地区、专业、GPA、语言成绩、预算)做初步筛选，只保留符合或接近的项目；\n"
+        "2. 将候选院校按 冲刺 / 稳妥 / 保底 三档划分(每档1-2所，依据排名、申请难度、背景匹配度)；\n"
+        "3. 每所院校给出匹配理由(为什么适合用户)；\n"
+        "4. 标注关键信息：截止日期、学费、语言要求、核心课程(仅用资料中明确写出的字段)。\n"
+        "只使用【检索资料】中明确出现的院校与字段，严禁引入资料外的学校、项目名称、阈值或建议。绝不编造。中文、条理清晰，用「### 小标题 + 列表」组织。"
+    ),
+    "admission": (
+        "你是录取风险评估师。基于【检索资料】中的真实录取/拒信案例，评估用户的申请竞争力。\n"
+        "要求：\n"
+        "1. 找出与用户背景(专业、GPA、语言成绩)最相似的案例；\n"
+        "2. 对比相似案例的录取/被拒结果，给出用户在该档位的定位(冲刺型/稳妥型/保底型)；\n"
+        "3. 指出用户的背景短板与风险点；\n"
+        "4. 给出补齐建议(如补科研、刷分、换项目)，且建议必须基于资料中出现过的案例/院校。\n"
+        "只使用【检索资料】中明确出现的案例与字段，严禁引入资料外的案例、学校或阈值。中文、条理清晰。"
+    ),
+    "essay": (
+        "你是文书规划师。基于【检索资料】中的真实文书范例，为用户规划申请文书。\n"
+        "要求：\n"
+        "1. 找出与目标专业/方向最相关的范文；\n"
+        "2. 拆解这个范文的写作结构(开头→学术经历→科研/实习→职业规划→结尾)；\n"
+        "3. 输出可填充的文书大纲(各段落要点)；\n"
+        "4. 列出用户需要准备的素材清单。\n"
+        "只使用【检索资料】中明确出现的范文与字段，严禁引入资料外的范文或写法。中文、条理清晰。"
+    ),
+}
+
+# key -> 该 worker 的结论在 State 中存放的字段名
+CONCL_FIELD = {
+    "school": "school_plan",
+    "admission": "admission_risk",
+    "essay": "essay_outline",
+}
+
+
+def _analyze(state: State, key: str, docs: List[Document]) -> str:
+    """worker 检索后，用角色 prompt 让 LLM 把原始文档转成结构化业务结论。"""
+    if not docs:
+        return ""
+    from qa import format_docs
+    context = format_docs(docs)          # 召回文档拼成 [资料N] 文本，与来源卡片编号一致
+    role = WORKER_ROLE_PROMPTS[key]
+    sys = SystemMessage(content=role)
+    user = HumanMessage(content=f"【检索资料】\n{context}\n\n【用户问题】\n{state['query']}\n\n【角色结论】")
+    resp = llm.invoke([sys, user])        # 这次 LLM 调用 = 该 worker 的"业务思考"
+    return _clean_answer(resp.content)
+
+
 def _worker(state: State, key: str):
-    """通用 worker：若本 key 在路由里，就检索对应 sheet 的库，返回原始 Document 列表。"""
+    """通用 worker：路由命中则检索本库 + 做角色分析，回写原始文档与结构化结论。"""
     if key not in state.get("route", []):
         return {}
     docs, _ = retrieve_docs(state["query"], sheet=SHEETS[key])
-    return {f"{key}_docs": docs}
+    conclusion = _analyze(state, key, docs)
+    return {f"{key}_docs": docs, CONCL_FIELD[key]: conclusion}
 
 
 def worker_school(state: State):
@@ -117,40 +173,77 @@ def worker_essay(state: State):
 
 
 def synthesizer(state: State):
-    """把多个 worker 检索到的资料汇总成最终答复。
+    """把三个 worker 的结构化结论整合成一份可执行的留学申请规划。
 
-    关键：三个 worker 召回的 Document 先按 URL 全局去重，再用 format_docs
-    统一编号成 [资料1]~[资料N]，避免每个 worker 内部独立编号导致引用混乱。
+    三个 worker 已各自完成"业务思考"(选校策略 / 录取风险评估 / 文书规划)，
+    这里只负责把它们按时间轴整合，不再重复读原始文档。
     """
-    from qa import format_docs
+    plan = state.get("school_plan", "")
+    risk = state.get("admission_risk", "")
+    outline = state.get("essay_outline", "")
 
-    q = state["query"]
+    # 来源(与 ask_multi 同样去重逻辑，保证 [资料N] 编号对齐)
     all_docs: List[Document] = []
     for key in ("school", "admission", "essay"):
         all_docs.extend(state.get(f"{key}_docs", []))
     deduped = _dedup_docs(all_docs)
-    context = format_docs(deduped) if deduped else "（未检索到相关资料）"
+    sources_text = "\n".join(
+        f"[{i+1}] {d.metadata.get('source_url', '')}" for i, d in enumerate(deduped)
+    )
+
+    sections = []
+    if plan:    sections.append("【选校策略结论】\n" + plan)
+    if risk:    sections.append("【录取风险评估结论】\n" + risk)
+    if outline: sections.append("【文书规划结论】\n" + outline)
+    expert_text = "\n\n".join(sections)
 
     sys = SystemMessage(content=(
-        "你是 StudyPath AI 留学规划助手。请严格基于【检索到的资料】回答用户问题。"
-        "规则: 1) 只用资料里的事实，绝不编造院校/排名/分数/案例; "
-        "2) 资料不足就如实说明，并建议用户补充哪类数据; "
-        "3) 用中文、条理清晰、必要时分点; "
-        "4) 回答末尾附上引用来源(source_url)，每条来源单独一行，格式如 `[资料1] 来源：https://...`，方便用户核实；不要把所有来源堆在同一行。"
-        "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，一律用「### 小标题 + 无序列表(- 要点)」组织; "
-        "不要使用 <br> / <br/> 标签，需要换行直接用真实换行符; "
-        "只引用资料中明确写出的字段名，不要自行发明字段名(例如不要编造'GRE量化'、'满足归属'这类词); "
+        "你是 StudyPath AI 留学规划整合器。你已收到三位专家的结构化结论：\n"
+        "选校策略(冲刺/稳妥/保底)、录取风险评估(定位/风险点)、文书规划(结构/大纲)。\n"
+        "请将其整合为一份【可执行的留学申请规划】，严格按时间轴组织：\n"
+        "阶段1 选校定稿 → 阶段2 材料准备 → 阶段3 文书写作 → "
+        "阶段4 网申提交(含截止日期checklist) → 阶段5 面试准备。\n"
+        "每个阶段给出关键任务与优先级。严格基于专家结论，不要补充专家结论之外的信息；\n"
+        "若【文书规划结论】为空(essay worker 未命中)，阶段3 文书写作需明确标注『未检索到同方向范文，以下为通用写作框架』，不得伪装成来自知识库。\n"
+        "引用资料时用 [资料N] 标注。中文，用「### 阶段N + 列表」组织。\n"
+        "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，"
+        "一律用「### 小标题 + 无序列表(- 要点)」组织；"
+        "不要使用 <br>/<br/> 标签，需换行直接用真实换行符；"
+        "只引用资料中明确写出的字段名，不要自行发明字段名；"
         "引用资料时用 [资料N] 标注，N 来自资料块开头的编号。"
     ))
-    user = HumanMessage(content=f"【检索到的资料】\n{context}\n\n【用户问题】\n{q}\n\n【回答】")
+    user = HumanMessage(content=(
+        f"{expert_text}\n\n【可引用来源】\n{sources_text}\n\n"
+        f"【用户问题】\n{state['query']}\n\n【整合后的申请规划】"
+    ))
     resp = llm.invoke([sys, user])
     answer = _clean_answer(resp.content)
     return {"answer": answer, "messages": [AIMessage(content=answer)]}
 
 
+def _tables_to_lists(text: str) -> str:
+    """把 markdown 表格转成无序列表，避免 Gradio/预览器渲染错乱（单元格内换行会乱）。"""
+    out = []
+    for line in text.split("\n"):
+        s = line.strip()
+        is_row = s.startswith("|") and s.endswith("|") and "|" in s[1:-1]
+        if not is_row:
+            out.append(line)          # 非表格行原样保留
+            continue
+        cells = [c.strip() for c in s.strip("|").split("|")]
+        # 跳过分隔行 |---|---|（内容全是 - : 空格）
+        if all(set(c) <= set("-: ") for c in cells):
+            continue
+        out.append("- " + "｜".join(cells))   # 表格行 → 列表项，单元格用 ｜ 连接
+    return "\n".join(out)
+
+
 def _clean_answer(text):
-    """后处理兜底：清理 <br> 标签、压缩多余空行，避免终端/预览器渲染错乱。"""
+    """后处理兜底：清理标签、重复标题符号、markdown 表格、多余空行。"""
     text = text.replace("<br>", "\n").replace("<br/>", "\n").replace("<BR>", "\n")
+    text = re.sub(r"#{2,}\s*#{2,}\s*", "### ", text)   # 修复 "### ### 阶段" 重复符号
+    text = re.sub(r"\]\[", "] [", text)                 # 修复 [资料1][资料2] 挤在一起 → [资料1] [资料2]
+    text = _tables_to_lists(text)                        # 表格转列表，防渲染错乱
     text = re.sub(r"[ \t]+\n", "\n", text)     # 清掉行尾空白
     text = re.sub(r"\n{3,}", "\n\n", text)     # 合并 >2 个连续空行为 1 个
     return text.strip()
@@ -188,6 +281,9 @@ def ask_multi(query: str) -> dict:
         "school_docs": [],
         "admission_docs": [],
         "essay_docs": [],
+        "school_plan": "",
+        "admission_risk": "",
+        "essay_outline": "",
         "answer": "",
     })
     # 与 synthesizer 使用同一套去重逻辑，保证底部卡片 [N] == 答案里的 [资料N]

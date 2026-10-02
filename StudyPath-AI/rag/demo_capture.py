@@ -3,39 +3,56 @@
 demo_capture.py — 跑一次真实 RAG 检索 + 问答，把结果落盘成 JSON。
 供 PPT 生成真实 demo 截图用。内容全部来自真实运行（chroma_db + qwen-plus），
 不编造任何院校/排名/分数。
+
+设计要点（v2）：
+  1) 只检索【一次】，且走 query_norm 别名归一化；
+  2) 用同一批 docs 生成回答 —— 保证落盘的「召回结果」与「喂给模型的上下文」严格同源；
+  3) 路径基于 __file__ 推导，从任何目录调用都能跑。
+
+用法：
+    cd StudyPath-AI
+    python rag/demo_capture.py                          # 跑内置的两条默认问题
+    python rag/demo_capture.py "你的问题"                # 跑指定问题
 """
-import sys
 import json
+import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
-sys.path.insert(0, ".")
+# 让 qa / config 等同目录模块可被 import（不依赖当前工作目录）
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from qa import build_qa, retrieve_only, format_docs
-from config import CHROMA_DIR, TOP_K
+from qa import retrieve_docs, answer_from_docs  # noqa: E402
+from config import TOP_K  # noqa: E402
+
+# 输出路径固定落在 rag/ 下，跟旧版行为一致
+OUT_PATH = Path(__file__).resolve().parent / "rag_demo_capture.json"
+
+DEFAULT_QUESTIONS = [
+    "GPA 3.5、雅思 7.0，想申美国 top30 的 CS 硕士，有哪些学校比较稳？",
+    "CMU 的计算机硕士项目要求和截止日期是什么？",
+]
 
 
 def run_one(question: str) -> dict:
+    # 1) 只检索一次（内部已做别名归一化）
     t0 = time.time()
-    # 1) 只检索，拿到真实命中的资料（带 source_url）
-    ctx_raw = retrieve_only(question)
-    docs = retrieve_only.__wrapped__ if False else None  # placeholder
+    docs, _items = retrieve_docs(question)
     t_retrieve = time.time() - t0
 
-    # 2) 完整链：检索 + qwen-plus 生成
-    chain = build_qa()
+    # 2) 用同一批 docs 生成 —— 展示的命中与模型看到的上下文完全同源
     t1 = time.time()
-    answer = chain.invoke(question)
+    answer = answer_from_docs(question, docs)
     t_gen = time.time() - t1
 
-    # 重新取一次结构化 docs 用于展示
-    from qa import get_retriever
-    retriever = get_retriever()
-    raw_docs = retriever.invoke(question)
-
     docs_out = []
-    for i, d in enumerate(raw_docs, 1):
-        src = d.metadata.get("source_url") or d.metadata.get("source") or d.metadata.get("source_sheet", "")
+    for i, d in enumerate(docs, 1):
+        src = (
+            d.metadata.get("source_url")
+            or d.metadata.get("source")
+            or d.metadata.get("source_sheet", "")
+        )
         docs_out.append({
             "idx": i,
             "sheet": d.metadata.get("source_sheet", ""),
@@ -57,10 +74,7 @@ def run_one(question: str) -> dict:
 
 
 def main():
-    questions = [
-        "GPA 3.5、雅思 7.0，想申美国 top30 的 CS 硕士，有哪些学校比较稳？",
-        "CMU 的计算机硕士项目要求和截止日期是什么？",
-    ]
+    questions = sys.argv[1:] or DEFAULT_QUESTIONS
     out = []
     for q in questions:
         try:
@@ -68,9 +82,9 @@ def main():
         except Exception as e:
             out.append({"question": q, "error": str(e)[:500]})
 
-    with open("rag_demo_capture.json", "w", encoding="utf-8") as f:
+    with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print("OK 已写入 rag_demo_capture.json")
+    print(f"OK 已写入 {OUT_PATH}")
     print(f"问题数: {len(out)}")
     for o in out:
         if "error" in o:

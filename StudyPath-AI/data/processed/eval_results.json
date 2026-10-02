@@ -1,0 +1,152 @@
+{
+  "timestamp": "2026-10-02 18:37:55",
+  "n_samples": 20,
+  "instruction_follow_rate": 1.0,
+  "mean_rouge_l": 0.5731,
+  "metric_definition": {
+    "instruction_follow_rate": "输出非空且长度>20 视为遵循指令",
+    "rouge_l": "LCS 长度 / max(输出长, 参考长)，近似值（非 HF 官方 ROUGE-L）"
+  },
+  "per_sample": [
+    {
+      "idx": 1,
+      "follow": true,
+      "rouge_l": 0.7197,
+      "generated": "University of Edinburgh MSc Computer Science：国家/地区：UK；排名：QS 2026 #15 (global); CS #38；学位：Master (MSc)；学制：1 年；GRE要求：Not required。数据来源：https://www.ed.ac.uk/studying/degrees/msc-computer-science",
+      "reference": "University of Edinburgh MSc Computer Science：国家/地区：UK；排名：QS 2026 #27 (global); CS #20；学位：Master (MSc)；学制：1 (180 credits) 年；GRE要求：Not Required。数据来源：https://www.ed.ac.uk/studying/postgraduate/degrees/index.php?r=site/view&edition=2025&id=110"
+    },
+    {
+      "idx": 2,
+      "follow": true,
+      "rouge_l": 0.4181,
+      "generated": "SOP（目标项目：MIT PhD CS (DL theory)）写作要点与质量参考：本案例SOP获得录取；写作要点包括：1. 个人背景与经历；2. 目标项目与职业规划；3. 研究兴趣与贡献。质量参考：真实、具体、有说服力。数据来源：https://www.gradcafe.com/graduate/viewtopic.php?f=14&t=165789",
+      "reference": "SOP（目标项目：MIT PhD CS (DL theory)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：优秀(MIT PhD 真实公开)。参考来源：https://openessays.org/essays/mit-phd-sop-essay-chanwoo-park"
+    },
+    {
+      "idx": 3,
+      "follow": true,
+      "rouge_l": 0.5709,
+      "generated": "本案例真实申请结果：录取。规划建议：国家/地区：USA；目标院校/专业：National University of Singapore MComp (General)；GPA 87.47/100/4.0，托福 雅思6.5，GRE 311；申请者层级：985 智能电网信息工程；科研 无提及 篇，实习 未详 段。数据来源：https://www.linkedin.com/in/zheng-chen-2b0a501b8/",
+      "reference": "该生背景：目标院校/专业：National University of Singapore MComp (General)；GPA 87.47/100/4.0，托福 雅思6.5，GRE 311；申请者层级：985 智能电网信息工程；科研 无提及 篇，实习 未详 段。 本案例真实申请结果：录取AD (2024秋)。规划建议：若背景含名校实习/科研/高GPA等高竞争力要素，可冲刺顶尖项目；无论背景强弱，均建议采用「冲刺-稳妥-保底」梯度组合以分散风险。数据来源：https://www.nanxingjiaoyu.com/case/8491.html"
+    },
+    {
+      "idx": 4,
+      "follow": true,
+      "rouge_l": 0.4224,
+      "generated": "PS 文书（目标项目：CS硕士）写作要点：真实、具体、量化；质量参考：https://www.graduatecafe.com/threads/ps-2023-cs-masters.145678/",
+      "reference": "PS（目标项目：CS硕士）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：优秀(真实样本)。参考来源：https://bcmi.sjtu.edu.cn/home/majiaxin/"
+    },
+    {
+      "idx": 5,
+      "follow": true,
+      "rouge_l": 0.6059,
+      "generated": "University College London (UCL) MSc Computer Science：国家/地区：UK；排名：QS 2026 #13；学位：Master (MSc)；学制：1 年；GRE要求：Not required。数据来源：https://www.ucl.ac.uk/prospective-students/graduate/programmes/departments/computer-science/msc-computer-science",
+      "reference": "University College London (UCL) MSc Computer Science：国家/地区：UK；排名：QS 2026 #9 (global); CS #30+；学位：Master (MSc)；学制：1 年；GRE要求：Not Required。数据来源：https://qiantum.xdf.cn/blog/blog_7933534.shtml"
+    },
+    {
+      "idx": 6,
+      "follow": true,
+      "rouge_l": 0.312,
+      "generated": "SOP 文书（目标项目：CMU MSCS (Jiayi Weng 多项目全本 PS)）写作要点与质量参考：该 SOP 由 Jiayi Weng 在 2023 年获得 CMU MSCS 录取时提交，质量高。写作要点包括：清晰的目标陈述、具体的职业规划、突出的个人经历与成就、真实且有说服力的叙述等。数据来源：https://www.graduatecafe.com/threads/sop-2023-masters-of-science-in-computer-science-cmu.1458769/",
+      "reference": "SOP（目标项目：CMU MSCS (Jiayi Weng 多项目全本 PS)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：优秀(本人 GitHub Pages 完整 PDF)。参考来源：https://trinkle23897.github.io/pdf/PS-CMU.pdf"
+    },
+    {
+      "idx": 7,
+      "follow": true,
+      "rouge_l": 0.1811,
+      "generated": "本案例真实申请结果：录取。本规划建议仅供参考。数据来源：https://www.graduateschools.com/application/profiles/national-university-of-singapore-mcomp-computer-science-2026",
+      "reference": "该生背景：目标院校/专业：National University of Singapore MComp (Computer Science)；GPA 90+/100/4.0，托福 雅思7+，GRE 320+；申请者层级：北京高校 985；科研 无提及 篇，实习 未详 段。 本案例真实申请结果：录取AD。规划建议：若背景含名校实习/科研/高GPA等高竞争力要素，可冲刺顶尖项目；无论背景强弱，均建议采用「冲刺-稳妥-保底」梯度组合以分散风险。数据来源：https://www.tops.cn/sgp/apply/8840.html"
+    },
+    {
+      "idx": 8,
+      "follow": true,
+      "rouge_l": 0.648,
+      "generated": "本案例真实申请结果：录取 Stanford、CMU、剑桥、IC等。规划建议：本案例背景：目标院校/专业：Stanford/CMU/剑桥/IC CS 各类；GPA 92.3/100(≈3.8)/4.0，托福 103，GRE 325；申请者层级：985 软件工程；科研 2段校内科研 篇，实习 强软背景 段。规划建议：本案例真实申请结果：录取 Stanford、CMU、剑桥、IC等。数据来源：https://www.graduate365.com/2022/07/12/11299.html",
+      "reference": "该生背景：目标院校/专业：Stanford/CMU/剑桥/IC CS 各类；GPA 92.3/100(≈3.8)/4.0，托福 103，GRE 325；申请者层级：985 软件工程；科研 2段校内科研 篇，实习 强软背景 段。 本案例真实申请结果：录取(多校)。规划建议：若背景含名校实习/科研/高GPA等高竞争力要素，可冲刺顶尖项目；无论背景强弱，均建议采用「冲刺-稳妥-保底」梯度组合以分散风险。数据来源：https://www.peccn.com/uk/202412/19/36972.html"
+    },
+    {
+      "idx": 9,
+      "follow": true,
+      "rouge_l": 0.716,
+      "generated": "University of Southern California (USC) MS Computer Science：国家/地区：USA；排名：QS 2026 #18；学位：Master (MS)；学制：2 年；GRE要求：Not Required。数据来源：https://www.usc.edu/cas/graduate/programs/computer-science/index.html",
+      "reference": "University of Southern California (USC) MS Computer Science：国家/地区：USA；排名：QS 2026 #125 (global); CS #29；学位：Master (MS)；学制：1.5-2 年；GRE要求：Not Required (2027 cycle)。数据来源：https://viterbigradadmission.usc.edu/programs/masters/msprograms/ms-computer-science"
+    },
+    {
+      "idx": 10,
+      "follow": true,
+      "rouge_l": 0.4863,
+      "generated": "PS 文书（目标项目：CS硕士(通用)）写作要点：真实、具体、量化；质量参考：https://www.graduatecafe.com/threads/ps-2023-cs-masters-universities.1456789/",
+      "reference": "PS（目标项目：CS硕士(通用)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：范例。参考来源：https://www.findamasters.com/guides/personal-statement-computer-science"
+    },
+    {
+      "idx": 11,
+      "follow": true,
+      "rouge_l": 0.7632,
+      "generated": "University of Bristol MSc Computer Science (Conversion)：国家/地区：UK；排名：QS 2026 #135 (global); CS #148；学位：Master (MSc)；学制：1 年；GRE要求：Not required。数据来源：https://www.bristol.ac.uk/study/graduate/courses/2024/computer-science-conversion/",
+      "reference": "University of Bristol MSc Computer Science (Conversion)：国家/地区：UK；排名：QS 2026 #51；学位：Master of Science；学制：1 年；GRE要求：Not required。数据来源：https://gradsmatch.com/programs/university-of-bristol/msc-computer-science-conversion-17401"
+    },
+    {
+      "idx": 12,
+      "follow": true,
+      "rouge_l": 0.7562,
+      "generated": "National University of Singapore Master of Computing (Computer Science)：国家/地区：Singapore；排名：QS 2026 #18 (global); CS #35；学位：Master (MSc)；学制：1.5 年；GRE要求：Not required。数据来源：https://www.comp.nus.edu.sg/graduate/programmes/masters/computer-science/",
+      "reference": "National University of Singapore Master of Computing (Computer Science)：国家/地区：Singapore；排名：QS 2025 CS 世界第6；学位：MS；学制：1.5 年；GRE要求：Required。数据来源：https://www.comp.nus.edu.sg/programmes/masters/"
+    },
+    {
+      "idx": 13,
+      "follow": true,
+      "rouge_l": 0.7871,
+      "generated": "Arizona State University (ASU) MS in Computer Science：国家/地区：USA；排名：QS 2026 #135；学位：Master of Science；学制：2 年；GRE要求：Not Required。数据来源：https://www.asu.edu/cse/graduate/degree-programs/computer-science.html",
+      "reference": "Arizona State University (ASU) MS in Computer Science：国家/地区：USA；排名：US News 2025 #121；学位：Master of Science；学制：2 年；GRE要求：Optional / Not required。数据来源：https://scai.engineering.asu.edu/graduate-admissions"
+    },
+    {
+      "idx": 14,
+      "follow": true,
+      "rouge_l": 0.4189,
+      "generated": "PS 文书（目标项目：Oxford MSc CS (真实 Oxford 录取者原文)）写作要点与质量参考：本案例为真实 Oxford 录取者 PS 原文，写作要点包括：1. 突出个人经历与成就；2. 展示对项目的热情与匹配度；3. 保持简洁、具体、有说服力。质量参考：真实 Oxford 录取者 PS 原文。数据来源：https://www.graduateschools.com/application/sample/oxford-ps-ai",
+      "reference": "PS（目标项目：Oxford MSc CS (真实 Oxford 录取者原文)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：范例(theuniguide 编辑保留原稿)。参考来源：https://www.theuniguide.co.uk/advice/personal-statement-examples/computer-science-computing-and-it-personal-statement-examples/computer-science-msc"
+    },
+    {
+      "idx": 15,
+      "follow": true,
+      "rouge_l": 0.61,
+      "generated": "Carnegie Mellon University MS in Computer Science：国家/地区：USA；排名：QS 2026 #14 (global); CS #15；学位：Master of Science；学制：2 年；GRE要求：Not required。数据来源：https://www.cmu.edu/computer-science/graduate/index.html",
+      "reference": "Carnegie Mellon University MS in Computer Science：国家/地区：USA；排名：1；学位：MS；学制：1.5-2 年；GRE要求：Recommended。数据来源：https://csd.cmu.edu/academics/masters/admissions"
+    },
+    {
+      "idx": 16,
+      "follow": true,
+      "rouge_l": 0.7803,
+      "generated": "The University of Queensland (UQ) Master of Computer Science：国家/地区：Australia；排名：QS 2026 #138 (global); CS #159；学位：Master (MSc)；学制：1.5 年；GRE要求：Not required。数据来源：https://www.uq.edu.au/study/courses/computer-science-masters",
+      "reference": "The University of Queensland (UQ) Master of Computer Science：国家/地区：Australia；排名：42；学位：Master of Computer Science；学制：1-1.5 年；GRE要求：Not required。数据来源：https://study.uq.edu.au/study-options/programs/master-computer-science-5522"
+    },
+    {
+      "idx": 17,
+      "follow": true,
+      "rouge_l": 0.494,
+      "generated": "SOP 文书（目标项目：CMU PhD HCI (Georgia Tech→CMU)）写作要点与质量参考：本案例为真实申请结果，SOP 由文书顾问修改润色；数据来源：https://www.hackerearth.com/practice/notes/phd-sop-georgia-tech-cmu-example/",
+      "reference": "SOP（目标项目：CMU PhD HCI (Georgia Tech→CMU)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：优秀(PhD HCI 公开)。参考来源：https://openessays.org/essays/cmu-phd-sop-essay-jason-2024"
+    },
+    {
+      "idx": 18,
+      "follow": true,
+      "rouge_l": 0.3289,
+      "generated": "PS 文书（目标项目：CS硕士(转专业)）写作要点：真实、具体、量化；质量参考：https://www.graduatecafe.com/threads/ps-2023-cs-masters-1-year.465789/",
+      "reference": "PS（目标项目：CS硕士(转专业)）写作要点：需突出申请者与项目的匹配度、具体经历与量化成果、清晰的短期/长期职业目标；本范例质量标注：良好(范例)。参考来源：https://www.prospects.ac.uk/postgraduate-study/masters-degrees/personal-statements-for-postgraduate-applications/computer-science-personal-statement"
+    },
+    {
+      "idx": 19,
+      "follow": true,
+      "rouge_l": 0.7026,
+      "generated": "University of Maryland, College Park MS in Computer Science：国家/地区：USA；排名：US News 2026 #48 (global); CS #31；学位：Master of Science；学制：2 年；GRE要求：Not required。数据来源：https://www.cs.umd.edu/graduate/grad-programs/masters",
+      "reference": "University of Maryland, College Park MS in Computer Science：国家/地区：USA；排名：US News 2025 #44；学位：Master of Science；学制：2 年；GRE要求：Optional。数据来源：https://www.yocket.com/universities/university-of-maryland-college-park/computer-science-31922"
+    },
+    {
+      "idx": 20,
+      "follow": true,
+      "rouge_l": 0.741,
+      "generated": "University of California, Berkeley MEng Electrical Engineering and Computer Science：国家/地区：USA；排名：QS 2026 #15 (global); CS #1；学位：Master of Engineering (MEng)；学制：2 年；GRE要求：Not required。数据来源：https://engineering.berkeley.edu/graduate/meng-electrical-engineering-and-computer-science",
+      "reference": "University of California, Berkeley MEng Electrical Engineering and Computer Science：国家/地区：USA；排名：QS 2026 #12 (global); CS #4；学位：Master (MEng, professional)；学制：1 年；GRE要求：Not Required。数据来源：https://eecs.berkeley.edu/resources/grads/meng"
+    }
+  ]
+}

@@ -26,30 +26,40 @@
    │
    ▼
 ┌─────────────┐
-│ Supervisor  │  LLM 决策：该派哪些专家？（school / admission / essay）
+│ Supervisor  │  LLM 决策：本轮该激活哪些专家，落库 route=['school','admission','essay']
 └──────┬──────┘
-       │ 路由结果（如 ['school','admission','essay']）
-   ┌───┼───────────────┐
-   ▼   ▼               ▼
-┌────────┐  ┌──────────┐  ┌────────┐
-│school  │  │admission │  │ essay  │  三个 Worker 各自检索自己的 RAG 库
-│ Worker │  │ Worker   │  │ Worker │  （Chroma metadata 按 sheet 隔离）
-└───┬────┘  └────┬─────┘  └───┬────┘
-    │            │            │
-    └────────────┼────────────┘
-                 ▼
-          ┌──────────────┐
-          │ Synthesizer  │  LLM 把三份资料汇总成带 [资料N] 引用的答复
-          └──────────────┘
-                 │
-                 ▼
-             Web UI（Gradio）/ CLI（app / app_multi）
+       │
+       ▼
+┌──────────────────┐
+│ worker_school    │  route 命中 → 检索院校项目库 + 角色分析；未命中 → 跳过
+└────────┬─────────┘
+         ▼
+┌──────────────────┐
+│ worker_admission │  route 命中 → 检索录取案例库 + 角色分析；未命中 → 跳过
+└────────┬─────────┘
+         ▼
+┌──────────────────┐
+│ worker_essay     │  route 命中 → 检索文书范例库 + 角色分析；未命中 → 跳过
+└────────┬─────────┘
+         ▼
+   ┌──────────────┐
+   │ Synthesizer  │  LLM 汇总三份业务结论 → 全局统一编号 → 最终答复
+   └──────┬───────┘
+          ▼
+   Web UI（Gradio）/ CLI（app_multi）
 ```
+
+> ⚠️ **拓扑说明（对着代码说）**：`add_edge` 连接出的是一条**固定串行链**
+> （`START → supervisor → worker_school → worker_admission → worker_essay → synthesizer → END`），
+> **不是并行分支**。Supervisor 的 `route` 决定的是"哪些 worker 真正干活"——
+> 未命中的 worker 直接跳过、不检索不调用 LLM。这样既保留了"按需派单"的收益，
+> 又让每次运行的执行路径可预测、易调试。
 
 **为什么用多智能体？** 单链 RAG 只能"一把梭"检索全部资料，容易信息混杂、顾此失彼。
 多智能体让每个专家只盯自己的库（院校库只答项目细节、案例库只做背景匹配、文书库只给范文），
-Synthesizer 再交叉推理——例如基于案例库判断"当前分数下 Stanford/CMU 竞争力较弱"，
-这种洞察单 agent 跑不出来。
+且每个 worker 会把自己检索到的原文**转成结构化业务结论**（选校梯度 / 风险点 / 文书要点），
+再交给 Synthesizer 交叉推理——例如结合案例库判断"当前分数下 Stanford/CMU 竞争力较弱"，
+这种"先各自专业判断、再综合"的链路，单 agent 一把检索给不出来。
 
 ---
 
@@ -64,8 +74,9 @@ Synthesizer 再交叉推理——例如基于案例库判断"当前分数下 Sta
 | 生成 | **DashScope `qwen-plus`** | 走 OpenAI 兼容端点 |
 | UI | **Gradio** | 网页演示版 |
 
-> ⚠️ **API Key 归属**：本项目写死用**阿里云 DashScope** 的 key（embedding 模型只有 DashScope 有，DeepSeek 无 embedding 不能替）。
-> key 只活在 `config.py` 和你的本地环境，**不进对话、不截图**。失效时去 `dashscope.console.aliyun.com/apiKey` 重生成，自己写回 `config.py`。
+> ⚠️ **API Key 归属**：本项目用**阿里云 DashScope** 的 key（embedding 模型只有 DashScope 有，DeepSeek 无 embedding 不能替）。
+> key 存在项目根目录的 `.env`（`DASHSCOPE_API_KEY=...`），由 `config.py` 在启动时加载注入环境变量；`.env` 已被 `.gitignore` 屏蔽，**不进版本库、不进对话、不截图**。
+> 失效时去 `dashscope.console.aliyun.com/apiKey` 重新生成，自己写回 `.env` 即可。
 
 ---
 
@@ -73,19 +84,23 @@ Synthesizer 再交叉推理——例如基于案例库判断"当前分数下 Sta
 
 ```
 StudyPath-AI/rag/
-├── config.py                  # 路径 / API key / 模型名 / Chroma 目录（改这里）
+├── config.py                  # 路径 / 模型名 / Chroma 目录（key 从项目根 .env 加载）
 ├── data_loader.py             # xlsx 三库 -> langchain Document（含 38 校中英别名映射）
 ├── dashscope_embeddings.py    # 自实现 LangChain Embeddings 接口，调 DashScope 原生 SDK
 ├── build_vectorstore.py       # 切片 + 向量化 + 持久化到 Chroma
-├── qa.py                      # 检索链(LCEL) + retrieve_only(query, sheet) 按库隔离检索
+├── query_norm.py              # 查询侧学校别名归一化（修"Imperial"类裸别名召回失败）
+├── qa.py                      # 检索链(LCEL) + retrieve_docs/answer_from_docs 按库隔离检索与生成
 ├── agents.py                  # 多智能体：StateGraph(Supervisor+3 Worker+Synthesizer) + _clean_answer()
 ├── app.py                     # 命令行交互（单 agent 问答）
 ├── app_multi.py               # 命令行交互（多智能体问答）
-├── app_gradio.py              # 网页版 UI（Gradio）
+├── app_gradio.py              # 网页版 UI（Gradio 驾驶舱）
+├── demo_capture.py            # 跑一次真实问答并落盘 rag_demo_capture.json（取证用）
+├── build_demo_panel.py        # 由上面那个 json 渲染 rag_demo_panel.html（展示面板，不手写）
+├── eval_retrieval.py          # 五层检索评测 -> data/processed/rag_metrics.json
 ├── test_key.py / test_min_embed.py  # 最小验证脚本（key + embedding 可用性）
 ├── requirements.txt
 ├── README.md
-└── chroma_db/                 # 运行 build 后自动生成（向量库落盘）
+└── chroma_db/                 # 运行 build 后自动生成（向量库落盘，已在 .gitignore 中）
 ```
 
 ---
@@ -123,21 +138,23 @@ C:\Users\13656\anaconda3\envs\ai-base\python.exe app_gradio.py   # 网页版（�
 ## 六、数据真实性说明（毕设硬要求）
 
 - 所有回答**只基于三库检索到的资料**，prompt 强制「不编造、附来源」。
-- 每条 Document 的 `metadata.source_url` 来自采集时的官方/第三方真实链接，答复末尾回显 `[资料N]`，方便答辩当场核实。
+- 每条 Document 的 `metadata.source_url` 来自采集时的官方/第三方真实链接；回答要求附上来源说明或 `source_url`，方便答辩当场核实（`rag/build_demo_panel.py` 渲染的面板里每条命中都带真实来源域名）。
 - 资料不足时助手会如实说明并建议补充哪类数据，而非瞎编——这正是评委想看的数据严谨性。
 
 ---
 
-## 七、拿分点对照（理论满分 135）
+## 七、功能完成度
 
-| 模块 | 拿分 | 状态 |
-|------|------|------|
-| 全流程项目（采集→向量化→RAG→多智能体→UI） | +10 | ✅ |
-| RAG 检索问答（三库精确命中） | +5 | ✅ 已验证 |
-| 多智能体编排（LangGraph Supervisor-Worker） | +5 | ✅ 已验证（路由命中 + 交叉推理） |
-| 微调（LLaMA Factory 领域 LoRA） | +5 | ⬜ 可选拓展 |
-| N8N 自动化编排 | +5 | ⬜ 可选拓展 |
-| Dify 可视化 MVP | +5 | ⬜ 可选拓展 |
+| 模块 | 状态 |
+|------|------|
+| 数据采集与标注（三库共 180 条，每条带 `source_url`） | ✅ 已完成 |
+| 向量化与检索（Chroma + MMR，k=8 / fetch_k=20） | ✅ 已完成 |
+| RAG 检索问答（三库按 `source_sheet` 隔离命中） | ✅ 已完成 |
+| 多智能体编排（LangGraph Supervisor + 3 Worker + Synthesizer） | ✅ 已完成 |
+| 本地演示（Gradio 驾驶舱，`app_gradio.py`） | ✅ 已完成 |
+| 领域微调（LoRA · LLaMA Factory · AutoDL RTX 3090） | ✅ 已完成（见 `finetune/`） |
+| N8N 自动化编排（本地 docker → Dify API → 飞书） | ✅ 已完成 |
+| Dify 可视化 MVP（Chatflow 已发布） | ✅ 已完成 |
 
 ---
 
@@ -154,9 +171,9 @@ C:\Users\13656\anaconda3\envs\ai-base\python.exe app_gradio.py   # 网页版（�
 
 ---
 
-## 九、下一步可扩展（冲更高分）
+## 九、后续可继续打磨
 
-1. **微调**：用录取案例库做领域 LoRA，提升录取概率判断的专业度（需 GPU，1650 4G 可跑 QLoRA 7B）。
-2. **N8N 编排**：把系统接到飞书/邮件，做"申请季定时推送、多平台同步"。
-3. **Dify MVP**：低代码平台再包一层可视化，答辩 PDF 多一张截图。
+1. **评测集扩量**：当前检索评测 30 道、微调自动评估 20 条，可扩到 50–60 道并补充误判归因分析。
+2. **召回策略演进**：现有 MMR 已解决"多条内容雷同"的问题；若后续数据量上千条，再评估引入 Rerank 重排层。
+3. **微调接线**：`finetune/inference.py::generate_essay()` 已预留应用层入口，可在具备 24GB 显存的环境把生成侧切到本地 LoRA。当前主链路走云端 API，原因是本地 GTX 1650 4GB 显存装不下 7B 基座（约 14GB）。
 4. **Gradio 增强**：加历史对话、导出 PDF 咨询报告、院校对比雷达图。

@@ -11,7 +11,7 @@ test_min_embed.py — 最小独立 embedding 测试
 import dashscope
 from dashscope import TextEmbedding
 
-# 从 config 读 key（你已经把新 key 写进 config.py 了）
+# 从 config 读 key（config.py 会从项目根 .env 加载 DASHSCOPE_API_KEY，密钥不入库）
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from config import DASHSCOPE_API_KEY, EMBED_MODEL

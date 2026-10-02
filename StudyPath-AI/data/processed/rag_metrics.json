@@ -1,0 +1,485 @@
+{
+  "canonical": {
+    "n": 50,
+    "hit_rate": {
+      "hit_rate@1": 1.0,
+      "hit_rate@3": 1.0,
+      "hit_rate@5": 1.0,
+      "hit_rate@8": 1.0
+    },
+    "mrr": 1.0,
+    "recall@8": 1.0,
+    "per_type_hit@8": {
+      "intro": 1.0,
+      "gpa": 1.0,
+      "deadline": 1.0,
+      "lang": 1.0,
+      "tuition": 1.0,
+      "rank": 1.0,
+      "duration": 1.0
+    }
+  },
+  "adversarial": {
+    "n": 15,
+    "hit_rate": {
+      "hit_rate@1": 0.8667,
+      "hit_rate@3": 1.0,
+      "hit_rate@5": 1.0,
+      "hit_rate@8": 1.0
+    },
+    "mrr": 0.9333,
+    "recall@8": 1.0,
+    "per_type_hit@8": {
+      "gpa": 1.0,
+      "lang": 1.0,
+      "deadline": 1.0,
+      "tuition": 1.0,
+      "duration": 1.0,
+      "rank": 1.0,
+      "intro": 1.0
+    }
+  },
+  "faithfulness": {
+    "n": 10,
+    "citation_url_hit": 1.0,
+    "key_field_hit": 1.0,
+    "field_n": 3,
+    "detail": [
+      {
+        "id": "A6",
+        "query": "University of California, San Diego (UCSD) 计算机专业排名怎么样",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A3",
+        "query": "Johns Hopkins University cs 硕士申请截止什么时候",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A7",
+        "query": "Tufts University 计算机硕士好申吗，有什么要求",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A11",
+        "query": "Rice University 计算机研究生一年学费多少",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A1",
+        "query": "我想申 University of California, Irvine (UCI) 的计算机硕士，GPA 大概要多少",
+        "url_ok": true,
+        "field_ok": true
+      },
+      {
+        "id": "A2",
+        "query": "Durham University 的 AI 相关硕士雅思得几分",
+        "url_ok": true,
+        "field_ok": true
+      },
+      {
+        "id": "A9",
+        "query": "Simon Fraser University (SFU) 的 AI 相关硕士雅思得几分",
+        "url_ok": true,
+        "field_ok": true
+      },
+      {
+        "id": "A10",
+        "query": "The Hong Kong Polytechnic University (PolyU) cs 硕士申请截止什么时候",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A14",
+        "query": "Waterloo 计算机硕士好申吗，有什么要求",
+        "url_ok": true,
+        "field_ok": null
+      },
+      {
+        "id": "A5",
+        "query": "CMU 的计算机硕士学制几年",
+        "url_ok": true,
+        "field_ok": null
+      }
+    ]
+  },
+  "routing": {
+    "n": 30,
+    "coverage": 1.0,
+    "exact": 0.6333,
+    "route_distribution": {
+      "school": 7,
+      "admission+school": 7,
+      "admission": 5,
+      "admission+essay+school": 1,
+      "essay": 7,
+      "admission+essay": 3
+    },
+    "detail": [
+      {
+        "query": "CMU 计算机硕士的申请截止日期是什么时候？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "斯坦福计算机硕士一年学费大概多少美元？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "帝国理工学院计算机硕士学制是几年？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "UIUC 的计算机硕士对 GPA 最低要求多少？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "多伦多大学计算机硕士托福雅思要求多少分？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "南洋理工计算机专业排名怎么样？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "介绍一下卡内基梅隆的计算机硕士项目",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "港理工 cs 项目属于哪个学院，排名多少？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "滑铁卢大学计算机硕士需要 GRE 吗？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "波士顿大学计算机硕士偏好什么背景的学生？",
+        "expected": [
+          "school"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "我 GPA 3.5 托福 100，有没有申上 CMU 的往年案例？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "双非背景申请美国 CS 硕士有成功案例吗？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "GPA 3.7、两段实习申 UIUC 录取概率大吗？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "有没有和我背景类似的学长被多伦多大学录取的？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "往年录取案例里申 CMU 的同学一般有几段实习？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "我这个背景能上南洋理工吗，参考下往年录取数据",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "211 均分 85 申港理工 cs 有案例吗？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "school",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "案例库里被拒的同学通常 weak 在哪？",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "想看看去年申帝国理工的录取结果统计",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "admission",
+          "school"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "我有两篇论文，参考案例看能冲什么档次的学校",
+        "expected": [
+          "admission"
+        ],
+        "route": [
+          "school",
+          "admission",
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "个人陈述 PS 该怎么写，有没有范文参考？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "SOP 的结构一般是怎样的？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "申请 CV 简历有什么模板吗？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "推荐信 LOR 找谁写比较合适，有范例吗？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "admission",
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "文书里怎么突出科研经历？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "有没有高质量 PS 范例可以学习下？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "文书写作常见坑有哪些？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "CV 里实习经历怎么写比较有说服力？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay",
+          "admission"
+        ],
+        "coverage_ok": true,
+        "exact_ok": false
+      },
+      {
+        "query": "SOP 开头怎么写才吸引人？",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      },
+      {
+        "query": "给我一份计算机硕士申请的文书范例",
+        "expected": [
+          "essay"
+        ],
+        "route": [
+          "essay"
+        ],
+        "coverage_ok": true,
+        "exact_ok": true
+      }
+    ]
+  },
+  "latency": {
+    "rag_chain": {
+      "n": 10,
+      "p50": 2.672,
+      "p95": 9.039,
+      "mean": 3.62,
+      "min": 1.359,
+      "max": 10.425
+    },
+    "multi_agent": {
+      "n": 5,
+      "p50": 3.119,
+      "p95": 9.17,
+      "mean": 4.539,
+      "min": 2.541,
+      "max": 10.574
+    }
+  }
+}

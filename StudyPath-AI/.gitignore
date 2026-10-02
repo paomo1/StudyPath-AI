@@ -1,7 +1,18 @@
 # ===== 大文件 / 云端现下，不进版本库 =====
 pretrained/
 cache/
-model/
+
+# 向量库：build_vectorstore.py 从 xlsx 生成的产物，可重建
+# 用 **/ 是因为 rag/chroma_db/ 不在本 .gitignore 同级，裸写 chroma_db/ 匹配不到
+**/chroma_db/
+
+# 基座模型权重（15GB，云端现下）
+model/*
+# 例外：LoRA 适配器是微调环节的唯一物证，20MB，随仓库走
+!model/lora/
+# 11MB 词表，项目推理链不读它（inference.py:47 / ab_compare.py:108 均从基座取 tokenizer）
+model/lora/tokenizer.json
+
 __pycache__/
 *.pyc
 
@@ -9,6 +20,10 @@ __pycache__/
 .venv/
 env/
 venv/
+
+# ===== 密钥（绝不进版本库）=====
+.env
+*.env
 
 # ===== 工具 / 会话 =====
 .workbuddy/

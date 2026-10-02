@@ -27,16 +27,24 @@ LORA_DROPOUT     = 0.05
 TARGET_MODULES   = ["q_proj", "k_proj", "v_proj", "o_proj"]
 
 # ===== 训练超参 =====
+# 实际训练以 finetune/qwen_lora_sft.yaml 为准（LLaMA Factory CLI 路径）；
+# 下面这几个常量供 train.py 里备用的 transformers.Trainer 分支使用，
+# 数值与 yaml 保持一致，避免两套配置各说各话。
 LEARNING_RATE    = 2e-4
 NUM_EPOCHS       = 3
 BATCH_SIZE       = 1
 GRAD_ACCUM       = 8
 WARMUP_RATIO     = 0.03
 LOGGING_STEPS    = 10
+# 实物：144 条 train.jsonl 按 val_size=0.1 切出 129 训练 / 15 验证，
+# ceil(129/8)×3 epoch = 51 步。51 < SAVE_STEPS，所以训练中途不落 checkpoint，
+# 只在训练结束时保存最终权重（即 model/lora）。保持 200 以如实反映当时的训练配置。
 SAVE_STEPS       = 200
 
 # ===== 数据 =====
 TRAIN_RATIO      = 0.8
+# 注意：实际 SFT 指令文案由 annotations/build_sft_data.py 写死在每条样本的
+# instruction 字段里（三类任务各一套），本常量只服务于上面那个 Trainer 备用分支。
 INSTRUCTION_TMPL = "你是一名留学文书顾问，请根据以下信息生成文书：\n{input}"
 
 
