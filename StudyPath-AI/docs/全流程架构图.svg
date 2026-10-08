@@ -28,7 +28,7 @@
   <rect x="0" y="0" width="1280" height="850" fill="#F8FAFC"/>
 
   <!-- 标题 -->
-  <text x="40" y="48" class="title">StudyPath AI · 留学申请智能规划助手</text>
+  <text x="40" y="48" class="title">StudyPath · 留学申请智能规划助手</text>
   <text x="40" y="72" class="sub">全流程大模型项目架构 — 数据标注 → 模型微调 → 应用开发 → N8N 自动化</text>
 
   <!-- ===== 四阶段卡片 ===== -->

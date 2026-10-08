@@ -1,4 +1,4 @@
-# 启动/重启 StudyPath AI 学术驾驶舱（Gradio，http://127.0.0.1:7860）
+# 启动/重启 StudyPath 学术驾驶舱（Gradio，http://127.0.0.1:7860）
 #
 # 做两件事：
 #   1. kill 掉占着 7860 端口的旧进程（避免 Gradio 报 address already in use）

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_key.py — 绕开 langchain，直接用 OpenAI 兼容端点验证 key 是否有效。
-密钥已从硬编码改为从项目根 .env 读取（.env 不进 git），确保 .env 中 DASHSCOPE_API_KEY 为你自己的有效 key 即可，无需改代码。
+直接用 OpenAI 兼容端点验证 DASHSCOPE_API_KEY 是否有效，不经 langchain。
+密钥从项目根 .env 读取（.env 不进 git）。
 """
 from config import DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, EMBED_MODEL
 from openai import OpenAI

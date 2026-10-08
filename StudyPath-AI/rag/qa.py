@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-qa.py — 检索 + 生成问答链（LangChain LCEL 标准写法）。
+检索 + 生成的问答链，用 LangChain LCEL 组装。
 
-链结构：
-  question
-    ├─> retriever -> format_docs  => context
-    └─> RunnablePassthrough      => question
-  (context, question) -> PROMPT -> ChatOpenAI(qwen-plus) -> StrOutputParser
+    question
+      ├─> retriever -> format_docs  => context
+      └─> RunnablePassthrough      => question
+    (context, question) -> PROMPT -> ChatOpenAI(qwen-plus) -> StrOutputParser
 
-核心约束：只基于检索到的资料回答，不编造，附来源。这正对毕设"数据真实可溯源"的硬要求。
+只基于检索到的资料回答，附来源，不编造。
 """
 from urllib.parse import urlparse
 
@@ -25,7 +24,7 @@ from dashscope_embeddings import DashScopeEmbeddings
 from query_norm import normalize_query  # 查询侧学校别名归一化（修 "Imperial" 类裸别名召回失败）
 
 PROMPT = ChatPromptTemplate.from_template(
-    """你是 StudyPath AI，一个留学申请规划助手。请严格基于下面的【检索到的资料】回答用户问题。
+    """你是 StudyPath，一个留学申请规划助手。请严格基于下面的【检索到的资料】回答用户问题。
 
 规则：
 1. 只能使用资料中的事实，绝对不要编造院校、排名、分数或案例。

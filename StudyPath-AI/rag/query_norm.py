@@ -1,25 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-query_norm.py — 查询侧学校别名归一化（Query Rewriting 的最小可用版）。
+查询侧学校别名归一化。
 
-背景（真实问题驱动，不是纸上谈兵）：
-  建库时 data_loader.load_schools() 会把 _SCHOOL_ALIAS 的别名拼到文档开头，例如
-      "Imperial（帝国理工学院）（Imperial College London） 的 计算机硕士 项目..."
-  但**用户侧的 query 没做同样的归一化**。于是评测里出现真实 MISS：
-      query = "我想申 Imperial 的计算机硕士，GPA 大概要多少"
-  裸别名 "Imperial" 与文档里的 "帝国理工学院 / Imperial College London" 语义距离不够近，
-  在 MMR(fetch_k=20) 阶段被挤出 Top-8 → HitRate 掉到 93.3%（15 条中 1 条 miss）。
+建库时 data_loader 会把别名拼到文档开头，例如
+「Imperial（帝国理工学院）（Imperial College London） 的 计算机硕士 项目...」，
+但用户 query 没做同样处理。评测里出现过真实 miss：query「我想申 Imperial 的计算机
+硕士」中的裸别名与文档前缀语义距离不够近，在 MMR(fetch_k=20) 阶段被挤出 Top-8。
 
-做什么：
-  把 query 里出现的学校别名/简称/中文口语名，改写成「库内文档前缀同款」的写法：
-      "Imperial"  -> "Imperial（帝国理工学院）Imperial College London"
-  这样 embedding 与文档前缀高度对齐，召回稳定。
+这里把 query 里的别名 / 简称 / 中文口语名改写成与文档前缀同款的写法，让 embedding
+对齐，召回稳定。
 
-设计取舍（答辩能讲）：
-  - 纯规则 + 词典，**零 LLM 调用、零额外延迟**（对比：用 LLM 做 query rewriting 每次多 ~1s，
-    对 100 条的小库属于过度设计）。
-  - 词典**从 xlsx 院校库动态构建**，不是硬编码校名 —— 库里加学校自动生效。
-  - 命中不到就原样返回，绝不改写用户语义（不做同义扩展，避免引入幻觉）。
+纯规则 + 词典实现，零 LLM 调用、零额外延迟（LLM rewriting 每次多约 1s，对百条规模的
+小库不划算）。词典从 xlsx 院校库动态构建，库里加学校会自动生效；命中不到就原样返回，
+不做同义扩展。
 """
 import re
 
@@ -56,8 +49,8 @@ _index = None  # {token_lower: canonical_str}
 def _build_index():
     """从院校库真实 school_name 反查别名表，构建 token -> 规范化写法的映射。
 
-    注意：xlsx 里很多校名带括号后缀（如 "Northeastern University (Align)"），
-    直接拿它查 _SCHOOL_ALIAS 会失配，所以先剥后缀再查。
+    xlsx 里很多校名带括号后缀（如 "Northeastern University (Align)"），拿它直接查
+    _SCHOOL_ALIAS 会失配，所以先剥后缀再查。
     """
     wb = openpyxl.load_workbook(XLSX_PATH, read_only=True, data_only=True)
     ws = wb[SHEET_SCHOOLS]

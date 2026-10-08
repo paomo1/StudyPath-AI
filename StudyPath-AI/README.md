@@ -1,4 +1,4 @@
-# StudyPath AI
+# StudyPath
 
 基于大模型的留学申请规划助手 —— 整合 RAG 检索增强、**LangGraph 多智能体框架**、低代码工作流编排与 LoRA 微调的全流程毕设项目。
 

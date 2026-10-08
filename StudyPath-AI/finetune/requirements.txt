@@ -1,4 +1,4 @@
-# StudyPath AI · 微调训练环境依赖
+# StudyPath · 微调训练环境依赖
 # 安装：pip install -r requirements.txt
 llamafactory>=0.9.0
 transformers>=4.44.0

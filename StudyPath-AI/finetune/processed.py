@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
-"""数据预处理工具：原始语料 -> Alpaca 指令格式 -> 划分 train/eval
+"""
+数据预处理：把 data/raw/ 下的 .json / .jsonl / .txt 语料统一成 Alpaca 格式，
+按固定种子划分 train / eval。
 
-===== 职责边界（重要，别搞混）=====
-本脚本是【通用格式转换器】：读取 data/raw/ 下已有的 .json / .jsonl / .txt 语料，
-统一成 Alpaca 格式并按固定种子划分 train/eval。
-
-本项目 SFT 训练集的【真正生产入口】是：
+本脚本只是通用格式转换器。本项目 SFT 训练集的入口是
     python -m annotations.build_sft_data
-它直接读《院校数据采集.xlsx》的三个 sheet（院校项目库 / 录取案例库 / 文书范例库）
-构造 180 条 SFT 样本（144 train + 36 eval），并同步产出 LLaMA Factory 需要的
-dataset_info.json。SFT 数据的来源与标注逻辑都以那个脚本为准。
+它读《院校数据采集.xlsx》构造 180 条样本并产出 dataset_info.json，数据来源与标注
+逻辑以那个脚本为准。
 
-===== 安全闸门 =====
-data/raw/ 下只有 .xlsx 时，本脚本读不到样本 —— 此时它会【明确提示并拒绝写盘】，
-绝不会用空数据覆盖已验证的 train.jsonl / eval.jsonl。另有两道额外保护：
-  1) 样本数 < MIN_SAMPLES 直接中止
-  2) 样本数 < 现有数据集条数时拒绝覆盖（需显式 --force）
+data/raw/ 下只有 .xlsx 时读不到样本，脚本会拒绝写盘，不用空数据覆盖已验证的
+train.jsonl / eval.jsonl；样本数低于 MIN_SAMPLES 会中止，低于现有数据集条数时
+拒绝覆盖（需显式 --force）。
 """
 import argparse
 import json
@@ -32,11 +27,11 @@ MIN_SAMPLES = 20
 def read_raw_essays() -> list[dict]:
     """读取 data/raw/ 下所有文书（json / jsonl / txt）。
 
-    期望数据格式（任选其一）：
+    支持两种格式：
       1) JSON/JSONL: [{"instruction":..., "input":..., "output":...}, ...]
       2) TXT: 一篇文书一个 .txt，文件名作为 instruction 的来源标识
 
-    注意：.xlsx 不在这里解析 —— 见模块 docstring（走 annotations.build_sft_data）。
+    .xlsx 不在这里解析，走 annotations.build_sft_data。
     仅发现 .xlsx 时会打印提示，避免"静默返回空列表"这种危险行为。
     """
     essays: list[dict] = []
@@ -111,18 +106,18 @@ def main(force: bool = False):
     data = format_alpaca(essays)
     print(f"[processed] 格式化后 {len(data)} 条")
 
-    # ===== 安全闸门 1：空数据绝不写盘 =====
+    # 闸门 1：空数据直接中止
     if not data:
         print("[processed][中止] 没有可用样本，未写入任何文件（现有数据集保持不变）。")
         print("[processed][中止] 若 data/raw/ 只有 xlsx，请运行：python -m annotations.build_sft_data")
         sys.exit(1)
 
-    # ===== 安全闸门 2：样本数异常下限 =====
+    # 闸门 2：样本数低于下限
     if len(data) < MIN_SAMPLES:
         print(f"[processed][中止] 样本数 {len(data)} < 下限 {MIN_SAMPLES}，疑似数据源异常，未写入。")
         sys.exit(1)
 
-    # ===== 安全闸门 3：不允许用更少的数据覆盖已有数据集 =====
+    # 闸门 3：不用更少的数据覆盖已有数据集
     existing = count_existing()
     if existing and len(data) < existing and not force:
         print(f"[processed][中止] 拒绝覆盖：新数据 {len(data)} 条 < 现有数据集 {existing} 条。")

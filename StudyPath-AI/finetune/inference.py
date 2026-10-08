@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""LoRA 推理：加载基座 + LoRA 权重，生成留学建议
-供应用层「文书生成 / 规划 Agent」直接调用：from finetune.inference import generate_essay
+"""
+LoRA 推理：加载基座 + LoRA 权重生成文本，用于离线验证与 A/B 对照。
+from finetune.inference import generate_essay
 """
 import os
 import torch

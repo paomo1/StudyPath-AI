@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-"""微调训练入口
+"""
+微调训练入口。
 
-推荐方式：用 LLaMA Factory CLI（省事、稳）
-备选方式：用 transformers.Trainer（骨架见下方，默认不启用）
+主路径用 LLaMA Factory CLI（配置见 qwen_lora_sft.yaml）；下方的 transformers.Trainer
+骨架是备选实现，默认不启用。
 
-前置条件：SFT 数据集需先生成 ——
-    python -m annotations.build_sft_data
-（它读 data/raw/院校数据采集.xlsx 构造 180 条 SFT + dataset_info.json）
+跑之前先生成 SFT 数据集：python -m annotations.build_sft_data
 """
 from .config import ensure_dirs
 
 
-# ============ 方式 1（强烈推荐）：LLaMA Factory CLI ============
+# 方式 1（主路径）：LLaMA Factory CLI
 # 在项目根目录运行：
 #   pip install -r finetune/requirements.txt
 #   llamafactory-cli train finetune/qwen_lora_sft.yaml
@@ -20,7 +19,7 @@ from .config import ensure_dirs
 # 云端一键流程见 finetune/autodl_train.sh
 
 
-# ============ 方式 2：transformers Trainer 骨架（默认不启用）============
+# 方式 2：transformers Trainer 骨架（默认不启用）
 def train_with_trainer():
     from datasets import load_dataset
     from transformers import TrainingArguments, Trainer, DataCollatorForLanguageModeling

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-下载 Qwen2.5-7B-Instruct 基座到 pretrained/（约 15GB）
-优先走 ModelScope 国内镜像（比 HF 快），并支持本机 Clash 代理(7897)。
-AutoDL 云端运行时若无需代理，把下方 HTTP(S)_PROXY 两行注释即可。
+下载 Qwen2.5-7B-Instruct 基座到 pretrained/（约 15GB），默认走 ModelScope 镜像。
+脚本预设了本地代理 127.0.0.1:7897；无需代理时把下面的 HTTP(S)_PROXY 两行注释掉。
 """
 import os
 from pathlib import Path

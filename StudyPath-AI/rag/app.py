@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-app.py — 命令行交互式问答 demo。
+命令行交互式问答 demo。
 
-运行:  python app.py
-退出:  输入 exit / quit / q 或 Ctrl+C
-
-首次使用前请先跑 build_vectorstore.py 建好向量库。
+先跑 build_vectorstore.py 建好向量库，再 python app.py；输入 exit / quit / q 退出。
 """
 from qa import build_qa
 
 
 def main():
     print("=" * 56)
-    print("  StudyPath AI · RAG 问答 Demo")
+    print("  StudyPath · RAG 问答 Demo")
     print("  数据底座: 院校项目库(100) + 录取案例库(50) + 文书范例库(30)")
     print("  输入 exit 退出")
     print("=" * 56)

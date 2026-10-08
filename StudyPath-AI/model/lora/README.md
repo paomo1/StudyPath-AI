@@ -11,7 +11,7 @@ tags:
 pipeline_tag: text-generation
 ---
 
-# StudyPath AI · Qwen2.5-7B-Instruct LoRA Adapter
+# StudyPath · Qwen2.5-7B-Instruct LoRA Adapter
 
 留学申请规划领域的 **LoRA 领域适配权重**。基于 Qwen2.5-7B-Instruct 在真实留学语料上做参数高效微调，
 目的是让基座学会「留学顾问的表达范式」——文书语体、结构化输出、主动标注数据来源的习惯。

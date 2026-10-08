@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-data_loader.py — 把 xlsx 三库读成 langchain Document 列表。
+把《院校数据采集.xlsx》的三个 sheet 读成 langchain Document 列表。
 
-设计要点：
-- 每条「记录」本身就是一个语义完整的单元（一个院校项目 / 一个录取案例 / 一篇文书），
-  所以一条记录 = 一个 Document，不做切碎，检索更准。
-- page_content 用自然语言把关键字段拼出来，方便 embedding 理解。
-- metadata 保留结构化字段（来源 sheet、学校、项目、结果、来源 URL），
-  后面可用来做按国家/学校过滤，或回答时附引用。
+一条记录就是一个语义完整的单元（一个院校项目 / 一个录取案例 / 一篇文书），所以不做
+切碎，一条记录 = 一个 Document。page_content 由关键字段拼成自然语言，便于 embedding
+理解；metadata 保留结构化字段（来源 sheet、学校、项目、结果、来源 URL），供按国家 /
+学校过滤或回答时附引用。
 """
 import openpyxl
 from langchain_core.documents import Document

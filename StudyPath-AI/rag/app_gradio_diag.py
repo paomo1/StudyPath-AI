@@ -1,7 +1,6 @@
 """
-StudyPath AI · 超简诊断版（驾驶舱版的最小可运行核）
-目的：确认 Gradio 4.x 下的 Textbox + Button 怎么渲染、style 是否能命中
-不依赖任何 CSS/JS/JS 层
+最小诊断界面：确认 Gradio 4.x 下 Textbox + Button 的渲染结构、样式能否命中。
+不带任何自定义 CSS / JS。
 """
 import sys, os, html
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -40,9 +39,9 @@ CUSTOM_CSS = """
 }
 """
 
-with gr.Blocks(title="StudyPath AI · 诊断版", css=CUSTOM_CSS) as demo:
+with gr.Blocks(title="StudyPath · 诊断版", css=CUSTOM_CSS) as demo:
     gr.Markdown(
-        "## StudyPath AI · 诊断版\n"
+        "## StudyPath · 诊断版\n"
         "这一版**只**有：1 个输入框 + 1 个按钮 + 1 个对话窗口\n"
         "**没有**背景层、没有 JS、没有渐变、没有 canvas——"
         "只测 Gradio 组件本身能不能交互、elem_id 锁样式能不能命中。"

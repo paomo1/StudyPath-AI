@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-app_gradio_v1_basic.py — StudyPath AI 第一版（白底基础版）副本
+早期的基础版界面：白底、左输入右回答、智能体路由 + Markdown 答复。
+样式比 app_gradio.py 简单，作为可运行的精简备选保留。
 
-⚠️ 备份性质：这是驾驶舱版（app_gradio.py）改坏前的最初版本——白底、左输入右回答、
-智能体路由 + Markdown 答复，简洁可跑。驾驶舱版如果最后整不出来，跑这个兜底。
-
-布局：
-- 顶部标题（白底）
-- 左：你的问题 + 开始咨询按钮
-- 右上：智能体路由 (Supervisor 决策清单)
-- 右下：答复区（Markdown，含来源链接）
-
-运行：
-    C:/Users/13656/anaconda3/envs/ai-base/python.exe app_gradio_v1_basic.py
-浏览器打开 http://127.0.0.1:7860
+运行：python rag/app_gradio_v1_basic.py，浏览器打开 http://127.0.0.1:7860
 """
 import re
 import gradio as gr
@@ -24,7 +14,7 @@ from agents import ask_multi
 HEADER_HTML = r"""
 <div style="padding:18px 8px 8px">
   <div style="font-size:22px;font-weight:700;color:#1a2233;letter-spacing:-.3px">
-    📚 StudyPath AI · 留学规划助手
+    📚 StudyPath · 留学规划助手
   </div>
   <div style="margin-top:8px;font-size:13.5px;color:#5b6678;line-height:1.7">
     多智能体架构 <b>(RAG + LangGraph)</b> ：Supervisor 调度
@@ -97,7 +87,7 @@ def consult(query):
                f"⚠️ 调用出错：{e}\n\n请检查网络 / DashScope key 后重试。"
 
 
-with gr.Blocks(title="StudyPath AI · 留学规划助手", css=PANEL_CSS) as demo:
+with gr.Blocks(title="StudyPath · 留学规划助手", css=PANEL_CSS) as demo:
     gr.HTML(HEADER_HTML)
 
     with gr.Row():
@@ -115,7 +105,7 @@ with gr.Blocks(title="StudyPath AI · 留学规划助手", css=PANEL_CSS) as dem
             route_box = gr.HTML(value=render_route([]))
             gr.Markdown("**答复**")
             answer_box = gr.Markdown(
-                value="等待提问，下方将显示 StudyPath AI 的带引用答复…",
+                value="等待提问，下方将显示 StudyPath 的带引用答复…",
                 elem_classes=["ans-box"],
             )
 

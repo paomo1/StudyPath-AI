@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""StudyPath AI · 微调模块配置
-对应老师例子的 src/config.py：路径、超参、模型配置
+"""
+微调模块配置：路径、超参与模型设置。
 """
 from pathlib import Path
 import os

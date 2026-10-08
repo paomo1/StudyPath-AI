@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-test_dashscope_embed.py — 对比测试三种 embedding 调用方式
-A: OpenAI 兼容 + 单条文本
-B: OpenAI 兼容 + 多条文本
-C: dashscope 原生 SDK + 多条文本
-哪个能用就走哪个。
+对比三种 embedding 调用方式，确定哪种可用：
+    A. OpenAI 兼容端点 + 单条文本
+    B. OpenAI 兼容端点 + 多条文本
+    C. dashscope 原生 SDK + 多条文本
 """
 import os
 import sys

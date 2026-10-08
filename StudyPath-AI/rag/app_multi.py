@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-app_multi.py — StudyPath AI 多智能体命令行交互 demo。
+多智能体命令行交互 demo。
 
-运行:  python app_multi.py
-退出:  输入 exit / quit / q 或 Ctrl+C
-
-首次使用前请先跑 build_vectorstore.py 建好向量库。
+先跑 build_vectorstore.py 建好向量库，再 python app_multi.py；输入 exit / quit / q 退出。
 """
 from agents import build_graph
 from langchain_core.messages import HumanMessage
@@ -13,7 +10,7 @@ from langchain_core.messages import HumanMessage
 
 def main():
     print("=" * 56)
-    print("  StudyPath AI · 多智能体 (LangGraph)")
+    print("  StudyPath · 多智能体 (LangGraph)")
     print("  Supervisor 调度 -> School/Admission/Essay -> 汇总")
     print("  输入 exit 退出")
     print("=" * 56)

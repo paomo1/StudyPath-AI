@@ -1,20 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-StudyPath AI · LoRA SFT 训练集构造 (基于真实数据，零虚构)
-=========================================================
-直接读《院校数据采集.xlsx》三个 sheet 的真实字段，构造 Alpaca 格式 SFT：
-  1) 录取案例库 -> 选校规划问答
-  2) 院校项目库 -> 项目关键信息介绍
-  3) 文书范例库 -> 文书写作要点说明
+读《院校数据采集.xlsx》三个 sheet 的真实字段，构造 Alpaca 格式 SFT 训练集。
+录取案例库 -> 选校规划问答；院校项目库 -> 项目关键信息介绍；文书范例库 -> 文书写作要点说明。
 
-数据铁律：
-  - output 全部由【真实字段】拼成 + 引用【真实 source_url】，绝不编造录取结论或案例。
-  - 仅做客观陈述与领域常识建议（冲稳保梯度等通用方法论），不杜撰任何具体录取结果之外的信息。
+output 由真实字段拼成并引用真实 source_url，不含编造的录取结论；除客观陈述与通用
+方法论建议（冲稳保梯度等）外不补充其他内容。
 
-输出：
-  data/processed/train.jsonl
-  data/processed/eval.jsonl
-  data/processed/dataset_info.json   (供 LLaMA Factory 识别)
+输出 data/processed/train.jsonl、eval.jsonl 与 dataset_info.json（供 LLaMA Factory 识别）。
 """
 import openpyxl, json, random, os
 from pathlib import Path

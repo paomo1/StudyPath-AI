@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-build_demo_panel.py — 从 rag_demo_capture.json 生成 RAG demo 展示面板 HTML。
+从 rag_demo_capture.json 生成 RAG demo 展示面板 HTML。
 
-设计原则（避免"手写静态页与真实数据对不上"这类问题）：
-  面板内容 **100% 由真实运行结果渲染** —— 问题、回答、Top-K 命中、
-  来源域名、检索/生成耗时，全部读自 rag_demo_capture.json，不手写一个字。
+面板内容全部读自 rag_demo_capture.json（问题、回答、Top-K 命中、来源域名、检索与生成
+耗时），渲染时不做补充或手写，避免展示页与实际运行结果对不上。
 
-用法：
-    cd StudyPath-AI
-    python rag/build_demo_panel.py                # 渲染第 1 条问答（PPT 截图用）
-    python rag/build_demo_panel.py --index 1      # 渲染第 2 条
-    python rag/build_demo_panel.py --all          # 渲染全部条目
-    python rag/build_demo_panel.py --max-answer 600   # 回答截断到 600 字
+    python rag/build_demo_panel.py                 # 渲染第 1 条问答
+    python rag/build_demo_panel.py --index 1       # 渲染第 2 条
+    python rag/build_demo_panel.py --all           # 渲染全部条目
+    python rag/build_demo_panel.py --max-answer 600
 
-输出：rag/rag_demo_panel.html
+输出 rag/rag_demo_panel.html。
 """
 import argparse
 import html
@@ -114,13 +111,13 @@ def render_case(item: dict, max_answer: int = 0) -> str:
     return f"""<div class="app">
   <div class="topbar">
     <span class="dot"></span>
-    <span class="t">StudyPath AI · RAG 检索增强问答</span>
+    <span class="t">StudyPath · RAG 检索增强问答</span>
     <span class="s">本地 Gradio Demo · 真实运行记录 {html.escape(captured)}</span>
   </div>
   <div class="body">
     <div class="chat">
       <div class="q"><span class="lab">用户</span>{q}</div>
-      <div class="a"><span class="lab">StudyPath AI（仅基于检索资料回答）</span>{md_lite(answer)}</div>
+      <div class="a"><span class="lab">StudyPath（仅基于检索资料回答）</span>{md_lite(answer)}</div>
     </div>
     <div class="ret">
       <div class="h">检索命中 Top-{item.get("top_k", len(docs))} <span class="badge">Chroma 向量库 · MMR</span></div>
@@ -168,7 +165,7 @@ def main():
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>StudyPath AI · RAG Demo 面板</title>
+<title>StudyPath · RAG Demo 面板</title>
 <style>{CSS}</style>
 </head>
 <body>

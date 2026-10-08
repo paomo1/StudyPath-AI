@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-A/B 对照取证：同一条 prompt，跑「基座」与「基座+LoRA」两次生成，
-输出差异即为「微调权重真的生效了」的硬证据（答辩用）。
+A/B 对照：同一条 prompt 分别用「纯基座」和「基座 + LoRA」生成，对比输出差异。
 
-云端 AutoDL 用法：
-    python -m finetune.download        # 先下基座（15GB）
-    python -m finetune.ab_compare      # 再跑这个（约 5 分钟）
-产物：data/processed/ab_compare.json（几十 KB，下回本地即可）
+PEFT 的 LoRA 注入是原地修改的：若在循环里反复调用 PeftModel.from_pretrained，
+后续轮次的基座也会带上 adapter，A/B 对比必然相同。所以这里只套一次 PeftModel，
+A 组用 disable_adapter() 上下文取得，保证唯一变量是 adapter 是否启用。
 
-⚠️ 2026-10-02 修复（重要）：
-    旧版把 `PeftModel.from_pretrained(base, adapter)` 写在 for 循环里，
-    而 PEFT 的注入是【原地修改】——第一轮跑完，base 对象上就已经被插入了
-    LoRA 层（实测 18 个模块）。于是第 2、3 轮的「A 组（纯基座）」其实也是
-    微调模型，A/B 必然相同，得出「只有第 1 组有变化」的假结论。
-    本版改为：先套一次 PeftModel，再用 `disable_adapter()` 上下文做 A 组，
-    保证 A/B 是【同一个模型对象、同一份权重】，唯一变量 = adapter 是否启用。
+云端先下基座再跑本脚本：
+    python -m finetune.download
+    python -m finetune.ab_compare
+产物 data/processed/ab_compare.json。
 """
 import json
 import sys
@@ -30,10 +25,8 @@ except ImportError:  # pragma: no cover
 
 from .config import PRETRAINED_DIR, MODEL_OUT, DATA_PROCESSED
 
-# ===== 取证用的多条 prompt =====
-# 三条分别覆盖本项目三个业务 worker 的场景（选校策略师 / 录取风险评估师 / 文书规划师），
-# 只测一条在答辩上会被追问「样本量是否充分」，三条 = 场景覆盖 + 样本量都站得住。
-# 基座只加载一次，多跑 6 次生成，增量耗时仅 2-3 分钟。
+# 三条 prompt 分别覆盖选校策略师 / 录取风险评估师 / 文书规划师三个业务场景。
+# 基座只加载一次，多跑 6 次生成，增量耗时约 2-3 分钟。
 SYS = "你是一名留学申请规划顾问。"
 
 PROMPTS = [

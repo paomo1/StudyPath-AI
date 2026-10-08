@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""LoRA 双轨评估：自动指标 + 人工评审说明
-对应老师架构第 5 步「模型测试、评估」
+"""
+LoRA 双轨评估：自动指标（ROUGE-L、指令遵循率）+ 人工评审。
 """
 import json
 from pathlib import Path
@@ -29,9 +29,9 @@ def lcs_length(a, b):
 
 
 def auto_eval(n=20, dump: bool = True):
-    """跑自动指标，并把结果落盘成 eval_results.json
+    """跑自动指标并落盘 eval_results.json。
 
-    ⚠️ 旧版只 print 到终端，机器一关就没了 —— 答辩要拿的两个数必须留档。
+    指标只 print 到终端的话，实例一释放就没了，所以这里同时写文件。
     """
     import time
 

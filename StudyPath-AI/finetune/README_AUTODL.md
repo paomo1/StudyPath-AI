@@ -1,4 +1,4 @@
-# StudyPath AI · LoRA 微调 · AutoDL 云端训练指南
+# StudyPath · LoRA 微调 · AutoDL 云端训练指南
 
 > 本地机器（GTX 1650 4GB）跑不了 Qwen2.5-7B 的 LoRA，必须在云端 GPU 执行。
 > 本文档记录一套完整、可复现的流程：租卡 → 上传 → 一键训练 → 导出权重 → A/B 取证。

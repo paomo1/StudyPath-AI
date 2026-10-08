@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-StudyPath-AI · RAG demo 配置
-
+RAG 模块配置：路径、模型名与检索参数。
 """
 import os
 from pathlib import Path

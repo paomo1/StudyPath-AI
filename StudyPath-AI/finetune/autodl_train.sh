@@ -1,6 +1,6 @@
 #!/bin/bash
-# StudyPath AI · AutoDL 一键训练脚本
-# 用法：把整个 StudyPath-AI 项目上传或 git clone 到 AutoDL 实例后，运行：
+# StudyPath · AutoDL 一键训练脚本
+# 把整个 StudyPath-AI 项目上传或 git clone 到 AutoDL 实例后运行：
 #   bash finetune/autodl_train.sh
 set -e
 # 无论在哪调用，都切回项目根（脚本现位于 finetune/ 下）

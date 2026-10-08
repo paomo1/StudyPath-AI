@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-eval_retrieval.py — StudyPath AI RAG 检索 / 生成 量化评测（分层版）。
+RAG 检索与生成的分层评测。
 
-两层评测，区分「自己考自己」和「真实泛化」：
+A. 规范问法集（50 条）：query 由 xlsx 字段生成，与入库文档同源，用来确认管线稳定精确。
+   这层数字接近天花板，存在 data leakage，不能单独拿去对标业界水平。
+B. 口语化 / 别名对抗集（15 条）：模拟真实用户口吻（"CMU 计算机硕士好不好申"），
+   目标院校按 school_name 命中。这层反映真实泛化能力。
 
-  A. 规范问法集（canonical，50 条）
-     从 180 校 xlsx 自身字段生成，query 与文档同源。
-     用途：证明「对 KB 内已知院校的规范问法，检索管线稳定精确」。
-     注意：这一层数字会接近天花板，不能单独拿去对标业界 83%，
-           因为测试样本来自训练/入库数据本身（data leakage）。
-
-  B. 口语化 / 别名对抗集（adversarial，15 条）
-     模拟真实用户口吻（"CMU 计算机硕士好不好申 gpa 要多少""港大 cs 一年多少钱"），
-     目标院校用 school_name 命中（而非精确 url）。
-     用途：测真实泛化能力——这才是能写进简历、经得起答辩追问的数字。
-
-指标（参考 RAGAS，规则实现，零额外依赖、可复现）：
-  · HitRate@k  —— Top-k 是否含正确文档（k=1/3/5/8）
-  · MRR        —— 首个正确结果的平均倒数排名
-  · Recall@8   —— 单文档 GT 下等价于 HitRate@8
-  · Faithfulness（生成忠实度）
-       - citation_url_hit：答案是否引用了正确 source_url
-       - key_field_hit  ：答案是否给出关键数值（仅 gpa/lang 类问题计入，
-                           问学费/排名时本就不该出现语言分，不计以免拉低）
+指标全部用规则实现，无额外依赖：
+    HitRate@k       Top-k 是否含正确文档（k = 1/3/5/8）
+    MRR             首个正确结果的平均倒数排名
+    Recall@8        单文档 GT 下等价于 HitRate@8
+    Faithfulness    citation_url_hit：答案是否引用正确 source_url
+                    key_field_hit  ：答案是否给出关键数值（问学费 / 排名时不计语言分，
+                                     以免误判）
 """
 import json
 import os
@@ -389,7 +380,7 @@ def main():
     with open(METRICS, "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)
 
-    print("\n===== RAG 评测指标（StudyPath AI · 分层）=====")
+    print("\n===== RAG 评测指标（StudyPath · 分层）=====")
     print(f"\n[A] 规范问法集 ({canon['n']} 条，KB 内已知院校 / 同源)")
     for k in [1, 3, 5, 8]:
         print(f"    HitRate@{k:<2}: {canon['hit_rate'][f'hit_rate@{k}']:.1%}")

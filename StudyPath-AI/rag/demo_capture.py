@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-demo_capture.py — 跑一次真实 RAG 检索 + 问答，把结果落盘成 JSON。
-供 PPT 生成真实 demo 截图用。内容全部来自真实运行（chroma_db + qwen-plus），
-不编造任何院校/排名/分数。
+跑一次真实的 RAG 检索 + 问答，把结果落盘成 JSON，供生成展示页使用。
+内容全部来自真实运行（chroma_db + qwen-plus），不含编造数据。
 
-设计要点（v2）：
-  1) 只检索【一次】，且走 query_norm 别名归一化；
-  2) 用同一批 docs 生成回答 —— 保证落盘的「召回结果」与「喂给模型的上下文」严格同源；
-  3) 路径基于 __file__ 推导，从任何目录调用都能跑。
+只检索一次并走 query_norm 别名归一化，再用同一批 docs 生成回答，保证落盘的「召回
+结果」与「喂给模型的上下文」同源。路径基于 __file__ 推导，从任意目录调用都能跑。
 
-用法：
-    cd StudyPath-AI
-    python rag/demo_capture.py                          # 跑内置的两条默认问题
-    python rag/demo_capture.py "你的问题"                # 跑指定问题
+    python rag/demo_capture.py              # 跑内置的两条默认问题
+    python rag/demo_capture.py "你的问题"   # 跑指定问题
 """
 import json
 import sys

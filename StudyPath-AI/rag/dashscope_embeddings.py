@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-dashscope_embeddings.py — 用 dashscope 原生 SDK 实现 LangChain Embeddings 接口。
+dashscope 原生 SDK 的 LangChain Embeddings 适配层。
 
-为什么不用 OpenAIEmbeddings?
-  dashscope OpenAI 兼容端点对中文/批量 embedding 有 bug（400 InvalidParameter），
-  用原生 SDK 调 dashscope.TextEmbedding.call 完全避开此问题。
+兼容端点对中文批量 embedding 会返回 400 InvalidParameter，故改走原生
+dashscope.TextEmbedding.call。
 
-用法:
-  from dashscope_embeddings import DashScopeEmbeddings
-  emb = DashScopeEmbeddings(batch_size=10)
-  vectors = emb.embed_documents(["text1", "text2", ...])
+    from dashscope_embeddings import DashScopeEmbeddings
+    emb = DashScopeEmbeddings(batch_size=10)
+    vectors = emb.embed_documents(["text1", "text2"])
 """
 import dashscope
 from dashscope import TextEmbedding

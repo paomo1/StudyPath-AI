@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-test_min_embed.py — 最小独立 embedding 测试
-完全不经过 OpenAI 兼容端点、不经过 langchain、不经过我自己写的 wrapper。
-只用 dashcope SDK 直接调，调一条最简单的英文。
+最小 embedding 测试：只用 dashscope SDK 直接调一条文本，
+不经 OpenAI 兼容端点、不经 langchain、不经自定义 wrapper。
 
-目的：隔离验证「dashcope SDK + 你的 key」能不能跑通。
-- 通过 → 跑 build_vectorstore.py 入库
-- 失败 → 是 key/账号/网络问题，不用跑 build
+跑通说明 key 与网络没问题，可以去跑 build_vectorstore.py；失败则先排查 key / 账号 / 网络。
 """
 import dashscope
 from dashscope import TextEmbedding

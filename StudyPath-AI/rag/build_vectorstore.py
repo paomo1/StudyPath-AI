@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-build_vectorstore.py — 切片 + 向量化 + 持久化到 Chroma。
+把 data_loader 读出的文档向量化并持久化到 Chroma。
 
-健壮性要点：
-- 用 dashscope 原生 SDK（dashscope_embeddings.py）调 embedding，绕开 OpenAI 兼容端点 bug
-- 单条文本强制 str + 截断 2000 字符
-- 分批入库 + 失败隔离：单批炸了不丢整库
-- 已存在 chroma_db 自动清掉重建
+embedding 走 dashscope 原生 SDK（见 dashscope_embeddings.py），绕开兼容端点的中文
+批量调用问题。单条文本强制转 str 并截断 2000 字符；分批入库且失败隔离，单批出错不影响
+已入库的部分。已存在的 chroma_db 会先清空重建。
 """
 import os
 import shutil

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>StudyPath AI · RAG Demo 面板</title>
+<title>StudyPath · RAG Demo 面板</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background:#eef1f6; padding:24px; }
@@ -39,13 +39,13 @@
 <div class="app">
   <div class="topbar">
     <span class="dot"></span>
-    <span class="t">StudyPath AI · RAG 检索增强问答</span>
+    <span class="t">StudyPath · RAG 检索增强问答</span>
     <span class="s">本地 Gradio Demo · 真实运行记录 2026-08-21 11:31</span>
   </div>
   <div class="body">
     <div class="chat">
       <div class="q"><span class="lab">用户</span>GPA 3.5、雅思 7.0，想申美国 top30 的 CS 硕士，有哪些学校比较稳？</div>
-      <div class="a"><span class="lab">StudyPath AI（仅基于检索资料回答）</span>根据【检索到的资料】，GPA 3.5、雅思 7.0 符合以下美国CS强校部分项目的<b>最低或具竞争力的申请要求</b>，但需注意：“稳录”需结合整体背景（如科研/实习/课程匹配度等），而资料中仅提供<b>最低门槛或录取案例的客观数据</b>，无“保录”或“稳录”概率统计。以下为资料中明确支持该分数段可申且有录取先例的Top 30 CS项目（按CS专排由高到低排序）：<br><br>✅ <b>符合且有录取案例支撑的学校（CS专排均属全球Top 30）：</b>  <br>1. <b>Carnegie Mellon University（CMU）</b>  <br>　- CS专排：#1（CSRankings 2025）  <br>　- 要求：GPA 3.5（明确列为最低要求），雅思 7.0（达标）；GRE Recommended（非强制）  <br>　- 注意：虽为顶尖项目，但资料中未提供GPA 3.5+雅思7.0的直接录取案例；其门槛高，需强背景弥补（如论文、强推、高难度课程）。  <br>　→ 属“可达但非稳妥”，需强化其他维度。<br><br>2. <b>University of California, San Diego（UCSD）</b>  <br>　- CS专排：#13（QS 2026）  <br>　- 要求：GPA 3.5+（competitive），雅思 7.0（完全匹配）；GRE Not Required  <br>　- 录取佐证：case_022 中申请者获UCSD CS录取，其GPA 3.9+、GRE 325、有顶会论文；说明UCSD重视综合能力，GPA 3.5属门槛下限，需用科研/实习等弥补。  <br><br>3. <b>Georgia Institute of Technology（Georgia Tech）</b>  <br>　- CS专排：#7（QS 2026）  <br>　- 要求：GPA 3.5+（competitive），雅思 7.5（⚠️您的雅思7.0略低于要求）；GRE Optional  <br>　- 录取佐证：case_033 中C9学生（GPA 3.7+/4.0，雅思110+）获录；但资料未显示雅思7.0是否被接受——您的雅思7.0不满足其最低要求（需7……</div>
+      <div class="a"><span class="lab">StudyPath（仅基于检索资料回答）</span>根据【检索到的资料】，GPA 3.5、雅思 7.0 符合以下美国CS强校部分项目的<b>最低或具竞争力的申请要求</b>，但需注意：“稳录”需结合整体背景（如科研/实习/课程匹配度等），而资料中仅提供<b>最低门槛或录取案例的客观数据</b>，无“保录”或“稳录”概率统计。以下为资料中明确支持该分数段可申且有录取先例的Top 30 CS项目（按CS专排由高到低排序）：<br><br>✅ <b>符合且有录取案例支撑的学校（CS专排均属全球Top 30）：</b>  <br>1. <b>Carnegie Mellon University（CMU）</b>  <br>　- CS专排：#1（CSRankings 2025）  <br>　- 要求：GPA 3.5（明确列为最低要求），雅思 7.0（达标）；GRE Recommended（非强制）  <br>　- 注意：虽为顶尖项目，但资料中未提供GPA 3.5+雅思7.0的直接录取案例；其门槛高，需强背景弥补（如论文、强推、高难度课程）。  <br>　→ 属“可达但非稳妥”，需强化其他维度。<br><br>2. <b>University of California, San Diego（UCSD）</b>  <br>　- CS专排：#13（QS 2026）  <br>　- 要求：GPA 3.5+（competitive），雅思 7.0（完全匹配）；GRE Not Required  <br>　- 录取佐证：case_022 中申请者获UCSD CS录取，其GPA 3.9+、GRE 325、有顶会论文；说明UCSD重视综合能力，GPA 3.5属门槛下限，需用科研/实习等弥补。  <br><br>3. <b>Georgia Institute of Technology（Georgia Tech）</b>  <br>　- CS专排：#7（QS 2026）  <br>　- 要求：GPA 3.5+（competitive），雅思 7.5（⚠️您的雅思7.0略低于要求）；GRE Optional  <br>　- 录取佐证：case_033 中C9学生（GPA 3.7+/4.0，雅思110+）获录；但资料未显示雅思7.0是否被接受——<b>您的雅思7.0不满足其最低要求（需7.5）</b>，因此该校当前条件下不建议主申。<br><br>4. <b>University of Illinois Urbana-Champaign（UIUC）</b>  <br>　- 注：QS CS排名未在资料中给出，但UIUC CS长期稳居全美Top 5（US News）、全球Top 10，属公认Top 30 CS强校；资料中虽未列QS CS排名，但case_031明确录取其Professional MCS项目。  <br>　- 要求：GPA 3.7（案例中），托福103+（无雅思要求提及）；GRE无要求  <br>　- 注意：资料未提供UIUC对雅思的官方要求，也无GPA 3.5+雅思7.0的录取案例；<b>GPA 3.5低于案例值（3.7），且缺乏雅思适配性依据</b>，稳妥性较低。<br><br>❌ <b>不满足条件或资料不足的学校：</b>  <br>- Cornell（case_017）：GPA 3.8+，无语言成绩信息，且未提雅思要求；无GPA 3.5案例。  <br>- Stanford / CMU / Columbia（case_022）：虽被录取，但申请者GPA 3.9+、GRE 325、有独立作者顶会论文，背景远超您当前条件。  <br>- UCI（资料3）：CS专排#60+，不在Top 30范围内，不满足用户“Top 30”要求。<br><br>📌 <b>结论与建议：</b>  <br>- <b>唯一同时满足“CS专排Top 30 + GPA 3.5门槛 + 雅思7.0达标”的项目是：UCSD MS CSE（#13）</b>。  <br>- CMU虽排名更高（#1），但您的雅思7.0达其最低线，GPA 3.5为底线，<b>需极强补充项（如2段以上相关科研、高含金量实习、强推）才可能提升成功率</b>；资料中无类似背景成功案例。  <br>- Georgia Tech 雅思要求7.5，您目前不达标，暂不建议作为主申目标</div>
     </div>
     <div class="ret">
       <div class="h">检索命中 Top-8 <span class="badge">Chroma 向量库 · MMR</span></div>

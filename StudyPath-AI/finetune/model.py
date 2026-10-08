@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""模型加载与 LoRA 注入
-对应老师例子里「把预训练模型加载进来、再追加 LoRA 适配层」这一环节。
+"""
+加载预训练基座并在其上注入 LoRA 适配层。
 """
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
