@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyPath · 手机复习速览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fff5f8;
+    color: #2c2c2a;
+    line-height: 1.65;
+    padding: 16px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #ffd9e6, #ffeef4);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #f6c2d4;
+  }
+  header h1 { font-size: 20px; color: #72243e; }
+  header .meta { font-size: 12px; color: #993556; margin-top: 6px; }
+  .warn {
+    background: #fff0e6;
+    border: 1px solid #f5c4b3;
+    color: #712b13;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border: 1px solid #f3e3e9;
+  }
+  .card h2 { font-size: 16px; color: #d4537e; margin-bottom: 10px; }
+  .card ul { list-style: none; }
+  .card li { font-size: 14px; padding: 5px 0; border-bottom: 1px dashed #f0e2e8; }
+  .card li:last-child { border-bottom: none; }
+  .card code {
+    background: #fbeaf0;
+    color: #72243e;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    word-break: break-all;
+  }
+  .tag { display: inline-block; background: #eaf3de; color: #27500a; border-radius: 6px; padding: 1px 7px; font-size: 12px; margin-right: 4px; }
+  .hot { background: #fceb ; }
+  .hl { color: #a32d2d; font-weight: 600; }
+  .foot { text-align: center; font-size: 12px; color: #888780; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📚 StudyPath · 手机复习速览</h1>
+    <div class="meta">2026-10-06 v2（二次核对）· 哥哥专属 · 虾妹妹整理</div>
+  </header>
+
+  <div class="warn">
+    ⚠️ 已弃用 <b>PostgreSQL + pgvector</b>，现全面用本地 <b>Chroma</b>。旧记忆里写的 pgvector 是错的，以这里为准。
+  </div>
+
+  <div class="card">
+    <h2>1. 技术栈</h2>
+    <ul>
+      <li>向量库：<code>rag/chroma_db/</code> <span class="tag">Chroma 本地</span> 不再是 pgvector</li>
+      <li>嵌入：DashScope <code>text-embedding-v3</code>（自实现类，不经 langchain）</li>
+      <li>LLM：DashScope <code>qwen-plus</code>（<code>.env</code> 配 <code>DASHSCOPE_API_KEY</code>）</li>
+      <li>框架：LangChain LCEL 检索链 + LangGraph 多智能体</li>
+      <li>UI：Gradio 驾驶舱(7860) + Dify 知识库 + N8N 飞书推送</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>2. RAG 架构（串行链）</h2>
+    <ul>
+      <li><code>START → supervisor → 3 worker → synthesizer</code>（worker 未命中则跳过，非并行）</li>
+      <li>检索：MMR <code>k=8</code> / <code>fetch_k=20</code></li>
+      <li>建库：<code>rag/build_vectorstore.py</code> → 写 <code>rag/chroma_db/</code>（跑一次即可重建）</li>
+      <li>配置：<code>rag/config.py</code>（<code>CHROMA_DIR</code> / <code>TOP_K</code> / <code>fetch_k</code>）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>3. 数据（真实可溯源，零虚构）</h2>
+    <ul>
+      <li>源数据：<code>data/raw/院校数据采集.xlsx</code> 三 sheet 共 <b>180 条</b>，每条带 <code>source_url</code></li>
+      <li>院校项目库 100 ｜ 录取案例库 50 ｜ 文书范例库 30</li>
+      <li>产物：<code>data/processed/</code>（train/eval/rag_evalset.jsonl · rag_metrics/eval_results/ab_compare.json）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>4. 微调（LoRA）</h2>
+    <ul>
+      <li>基座：<code>Qwen2.5-7B-Instruct</code>（AutoDL 训练，本地 4GB 带不动）</li>
+      <li>配置：rank8 / alpha16 / target <code>q,k,v,o_proj</code> / lr 2e-4 / 3 epoch</li>
+      <li>adapter 位置：<code>model/lora/</code>（非 model/ 根）</li>
+      <li>结果：指令遵循率 <b>100%</b>、ROUGE-L <b>0.5731</b>（2026-10-02 重跑复核，与 8 月一致）；事实层 URL 命中 0/20（能力边界）</li>
+      <li class="hl">⚠️ 同步风险：本地 model/lora/ 为 8-20，若 AutoDL 10-02~10-04 重训需 scp 拉回</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>5. 关键文件速查</h2>
+    <ul>
+      <li><code>rag/agents.py</code> —— 多智能体 StateGraph（串行）</li>
+      <li><code>rag/qa.py</code> —— 单 agent LCEL 检索链</li>
+      <li><code>rag/build_vectorstore.py</code> —— 建 Chroma 库</li>
+      <li><code>rag/config.py</code> —— CHROMA_DIR + data/raw 路径 + 模型名</li>
+      <li><code>rag/dashscope_embeddings.py</code> —— 嵌入类</li>
+      <li><code>finetune/</code> —— 训练/评估/取证</li>
+      <li><code>model/lora/</code> —— LoRA 权重</li>
+      <li><code>dify_kb/</code> —— Dify 知识库 Markdown</li>
+      <li><code>docs/全流程架构图.svg</code> —— 已校正为 Chroma</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>6. 一句话答辩口径</h2>
+    <ul>
+      <li>StudyPath 是 AI 留学申请规划助手：用 <b>Chroma 本地向量库 + DashScope 嵌入</b>做真实可溯源 RAG，LangGraph 多智能体串行编排，外层接 Dify / N8N / Gradio；LoRA 微调做风格适配，但事实准确性仍依赖 RAG 检索而非生成。</li>
+    </ul>
+  </div>
+
+  <div class="foot">虾妹妹陪哥哥复习用 · 数据均取自真实代码，无虚构 🌸</div>
+</div>
+</body>
+</html>
