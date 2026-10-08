@@ -1,36 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-app_gradio.py — StudyPath AI 「AI Academic Command Center」学术驾驶舱（v2 修复版）
+StudyPath 学术驾驶舱（Gradio 界面）。
 
-相对上一版（坏）的关键改动：
-  1. 背景层 #sp-bg 从 z-index:-1 改回 z-index:0（之前沉太深被 body 白底吞），
-     .gradio-container 加 position:relative; z-index:1 覆盖背景 —— 背景正常显但不挡交互。
-  2. 输入框用 elem_id="spQuery" 锁样式（之前 .hero-input 没命中 Gradio 4.x 的 textarea 本体），
-     按钮用 elem_id="spBtn"，不再依赖 wrapper class。
-  3. Hero 大白圆角卡片直接穿在 gr.Row 上（.hero-row { background:#fff; border-radius:18px; ... }），
-     内部 input 透明背景 —— 避免 gr.HTML 包 Gradio 组件的层级冲突。
+踩过的几个渲染坑：背景层用 z-index:0 再给 .gradio-container 加 position:relative;
+z-index:1，给背景负 z-index 会被 body 白底盖掉；Gradio 4.x 下样式要命中 textarea 本体，
+用 elem_id 锁（spQuery / spBtn）而不是依赖 wrapper class；大圆角卡片直接挂在 gr.Row 上
+（.hero-row），不要用 gr.HTML 包 Gradio 组件。
 
-数据铁律：不编造任何院校/排名/录取率事实（真实可溯源）。
+界面不编造院校 / 排名 / 录取率数据。
 
-运行：
-    C:/Users/13656/anaconda3/envs/ai-base/python.exe app_gradio.py
-浏览器打开 http://127.0.0.1:7860
+运行：python rag/app_gradio.py，浏览器打开 http://127.0.0.1:7860
 """
 import re
 import gradio as gr
 from agents import ask_multi
 
 
-# ===================================================================
-#  CSS — 学术驾驶舱视觉
+# CSS — 学术驾驶舱视觉
 #
-#  ⚠️ 关键兼容性约束（2026-08-19 踩坑沉淀）：
-#  1. 背景装饰层（世界地图 / 学术网络）必须 position:fixed + z-index:0 + pointer-events:none，
-#     且 .gradio-container 自身 position:relative + z-index:1 覆盖背景 —— 否则要么背景被吞、
-#     要么挡交互。
-#  2. 严禁用 `*{margin:0;padding:0}` 这类全局重置 —— 会污染 Gradio 内部组件。
-#  3. 输入框样式用 elem_id 锁死（#spQuery textarea），不要依赖 wrapper class。
-# ===================================================================
+# 兼容性约束：
+#  1. 背景装饰层（世界地图 / 学术网络）用 position:fixed + z-index:0 + pointer-events:none，
+#     .gradio-container 自身 position:relative + z-index:1 覆盖背景，否则背景会被吞或挡交互
+#  2. 不要用 *{margin:0;padding:0} 这类全局重置，会污染 Gradio 内部组件
+#  3. 输入框样式用 elem_id 锁死（#spQuery textarea），不依赖 wrapper class
 CABINET_CSS = r"""
 :root{
   --bg:#eef2f9;
@@ -376,7 +368,7 @@ BACKGROUND_HTML = r"""
 # ===================================================================
 TOP_BAR_HTML = r"""
 <div id="sp-top">
-  <div class="brand"><span class="dot"></span><span>StudyPath AI<small>ACADEMIC COMMAND CENTER</small></span></div>
+  <div class="brand"><span class="dot"></span><span>StudyPath<small>Academic Planning Platform</small></span></div>
   <div class="status"><span class="live-dot"></span>Live · RAG + LangGraph</div>
 </div>
 """
@@ -386,9 +378,9 @@ TOP_BAR_HTML = r"""
 # ===================================================================
 HERO_HTML = r"""
 <div class="hero-block">
-  <span class="eyebrow">AI Academic Advisory</span>
-  <h1>Your Academic Path,<br>Powered by AI.</h1>
-  <p>From your profile to your dream university.</p>
+  <span class="eyebrow">Personalized Academic Planning</span>
+  <h1>Your Academic Path,<br>Designed Around You.</h1>
+  <p>From your academic profile to a personalized university shortlist.</p>
 </div>
 """
 
@@ -476,20 +468,13 @@ JS = (
 INITIAL_DASH = (
     '<div class="dash-root"><div class="empty-hint">'
     '输入你的学术画像（如 <b>GPA 3.5 · TOEFL 100 · 目标 CMU MSCS</b>），'
-    '下方将生成你的 <b>AI 学术驾驶舱</b>：申请画像、录取智能评估、院校匹配地图与申请策略。</div></div>'
+    '下方将生成你的 <b>学术驾驶舱</b>：申请画像、录取智能评估、院校匹配地图与申请策略。</div></div>'
 )
 
 
-# ===================================================================
-#  结构化提取（基于真实输入，不编造）
-# ===================================================================
-# ===================================================================
-#  结构化提取（真实智能：含估算、补全口径）
-#
-#  数据铁律：不编造任何具体分数。
-#  但允许按"中国本科档次 / 提问语义"做"估算 GPA"——并打 * 标记为估算。
-#  TOEFL/IELTS 同体系，并入"标化分数"槽，按 query 实际说的二选一显示。
-# ===================================================================
+# 从用户 query 里结构化提取档案信息，含估算与补全口径。
+# 不编造具体分数：GPA 允许按本科档次与提问语义估算，输出时打 * 标记。
+# TOEFL / IELTS 同体系，并入「标化分数」槽，按 query 实际提到的二选一显示。
 def extract_profile(q: str) -> dict:
     prof = {
         "gpa": None,
@@ -953,13 +938,17 @@ def build_dash(prof: dict, fit: dict, comp: int, route: list) -> str:
     )
 
 
-def consult(query: str):
-    """界面入口：调用多智能体，返回 (驾驶舱 HTML, markdown 答复)。"""
+def consult(query: str, thread_id: str = "demo"):
+    """界面入口：调用多智能体，返回 (驾驶舱 HTML, markdown 答复)。
+
+    thread_id 默认 "demo"：整个 Gradio 实例共享一个会话历史，便于现场演示
+    连续多轮指代；MemorySaver 为内存级，服务重启后历史清空。
+    """
     q = (query or "").strip()
     if not q:
         return INITIAL_DASH, "_请在上方输入你的问题_"
     try:
-        out = ask_multi(q)
+        out = ask_multi(q, thread_id=thread_id)
         route = out.get("route", [])
         answer = out.get("answer", "")
         prof = extract_profile(q)
@@ -973,7 +962,7 @@ def consult(query: str):
         return INITIAL_DASH, f"⚠️ 调用出错：{e}\n\n请检查网络 / DashScope key 后重试。", ""
 
 
-blocks_kwargs = {"title": "StudyPath AI · Academic Command Center", "css": CABINET_CSS}
+blocks_kwargs = {"title": "StudyPath · Academic Planning Platform", "css": CABINET_CSS}
 if int(gr.__version__.split(".")[0]) >= 4:
     blocks_kwargs["js"] = JS
 with gr.Blocks(**blocks_kwargs) as demo:
@@ -992,7 +981,7 @@ with gr.Blocks(**blocks_kwargs) as demo:
     submit_btn = gr.Button("Analyze →", elem_id="spBtn", variant="primary")
 
     dash = gr.HTML(value=INITIAL_DASH)
-    answer_box = gr.Markdown(value="_等待提问，下方将显示 StudyPath AI 的带引用答复…_", elem_classes=["dash-markdown"])
+    answer_box = gr.Markdown(value="_等待提问，下方将显示 StudyPath 的带引用答复…_", elem_classes=["dash-markdown"])
     source_box = gr.HTML(value="")
 
     submit_btn.click(consult, inputs=query_box, outputs=[dash, answer_box, source_box])

@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-agents.py — StudyPath AI 多智能体（LangGraph StateGraph 手写 supervisor-worker）。
+LangGraph StateGraph 实现的 supervisor-worker 多智能体。
 
-架构:
-  user query
-    -> Supervisor   (LLM 决策: 这个问题该派哪些专家)
-    -> School / Admission / Essay 三个 worker (各自检索自己的 RAG 库)
-    -> Synthesizer  (LLM 把多份资料汇总成最终答复)
+    query -> Supervisor（LLM 决定派哪些 worker）
+          -> School / Admission / Essay（各自检索对应的 RAG 库，add_edge 串行）
+          -> Synthesizer（汇总多个 worker 的结论成最终答复）
 
-每个 worker 复用 qa.retrieve_docs()，零重复代码。
-这是 LangGraph 最经典、答辩最好讲的「Supervisor + 多 Worker」模式。
+worker 复用 qa.retrieve_docs()，不重复实现检索。
 """
 import json
 import re
@@ -17,6 +14,7 @@ from typing import TypedDict, Annotated, List
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.documents import Document
@@ -197,8 +195,20 @@ def synthesizer(state: State):
     if outline: sections.append("【文书规划结论】\n" + outline)
     expert_text = "\n\n".join(sections)
 
+    # 多轮追问检测：messages 里已有上一轮的助手答案，即说明本轮是对话追问。
+    # add_messages reducer 保证历史跨 invoke 累积，故可直接从 state 判断。
+    is_followup = any(getattr(m, "type", "") == "ai" for m in state.get("messages", []))
+
+    followup_rule = (
+        "\n\n【多轮追问模式】检测到这是对话追问(上一轮已有答案)。用户当前问题"
+        "只关心某个具体信息点(如截止日期 / 学费 / 材料 / 排名等)。请直接针对该信息点"
+        "给出答案，并明确引用上一轮提到的具体实体(学校名、项目名)；"
+        "不要重复输出完整的阶段1-5规划模板，也不要重新推荐学校。"
+        "若专家结论未覆盖用户问的字段，明确写『知识库未检索到该字段』，不要编造。"
+    ) if is_followup else ""
+
     sys = SystemMessage(content=(
-        "你是 StudyPath AI 留学规划整合器。你已收到三位专家的结构化结论：\n"
+        "你是 StudyPath 留学规划整合器。你已收到三位专家的结构化结论：\n"
         "选校策略(冲刺/稳妥/保底)、录取风险评估(定位/风险点)、文书规划(结构/大纲)。\n"
         "请将其整合为一份【可执行的留学申请规划】，严格按时间轴组织：\n"
         "阶段1 选校定稿 → 阶段2 材料准备 → 阶段3 文书写作 → "
@@ -211,6 +221,7 @@ def synthesizer(state: State):
         "不要使用 <br>/<br/> 标签，需换行直接用真实换行符；"
         "只引用资料中明确写出的字段名，不要自行发明字段名；"
         "引用资料时用 [资料N] 标注，N 来自资料块开头的编号。"
+        + followup_rule
     ))
     user = HumanMessage(content=(
         f"{expert_text}\n\n【可引用来源】\n{sources_text}\n\n"
@@ -264,19 +275,83 @@ def build_graph():
     g.add_edge("worker_admission", "worker_essay")
     g.add_edge("worker_essay", "synthesizer")
     g.add_edge("synthesizer", END)
-    return g.compile()
+    # 挂内存级 checkpointer：让 state 跨多次 invoke 保持（thread_id 维度），
+    # 配合 ask_multi 的查询改写实现多轮指代消解。
+    return g.compile(checkpointer=MemorySaver())
 
 
-def ask_multi(query: str) -> dict:
+# 模块级复用编译好的图：checkpointer 是图级别的，若每次 build_graph() 新建
+# 就会顺带新建 MemorySaver，跨轮历史无法保留。故懒加载一份长期持有。
+_GRAPH = None
+
+
+def _get_graph():
+    global _GRAPH
+    if _GRAPH is None:
+        _GRAPH = build_graph()
+    return _GRAPH
+
+
+def _build_history_text(messages, max_turns: int = 4) -> str:
+    """把历史消息（不含最后一条，即当前轮）拼成 用户/助手 交替文本。
+
+    只保留最近 max_turns 轮，防止上下文无限膨胀。空则返回 ""。
+    """
+    prev = messages[:-1] if messages else []
+    turns = []
+    for m in prev:
+        t = getattr(m, "type", "")
+        role = "用户" if t == "human" else ("助手" if t == "ai" else None)
+        if role is None:
+            continue
+        content = getattr(m, "content", "")
+        if isinstance(content, str) and content.strip():
+            turns.append(f"{role}：{content.strip()}")
+    turns = turns[-max_turns * 2:]
+    return "\n".join(turns)
+
+
+def _rewrite_query(query: str, history: str, llm) -> str:
+    """多轮查询改写：结合历史把含指代的当前问题改写成语义自包含的问题。
+
+    当前问题已自包含则原样返回。失败（模型异常）也回退到原 query，不阻塞主流程。
+    """
+    sys = SystemMessage(content=(
+        "你是多轮对话的查询改写器。根据【历史对话】把【当前问题】改写成"
+        "不依赖上下文、语义自包含的独立问题；若当前问题已经自包含则原样返回。"
+        "只返回改写后的问题，不要任何解释或前缀。"
+    ))
+    user = HumanMessage(content=f"【历史对话】\n{history}\n\n【当前问题】\n{query}\n\n【改写后】")
+    try:
+        out = llm.invoke([sys, user]).content.strip()
+        return out or query
+    except Exception:
+        return query
+
+
+def ask_multi(query: str, thread_id: str = "demo") -> dict:
     """单次多智能体问答，返回 {route, answer, sources}。
 
     sources = 所有 worker 召回文档经全局去重后的来源卡片列表，
     顺序与 synthesizer 看到的 [资料N] 编号完全一致（B 方案）。
+
+    thread_id 维度通过 checkpointer 保留对话历史：下一轮调用时，会基于上一轮
+    的 messages 把含指代的 query 改写成自包含问题（写入 state["query"]），
+    原始 query 仍进 messages 供再下一轮使用。supervisor / worker 无需改动即可
+    理解"那它呢"这类多轮指代。
     """
-    graph = build_graph()
+    graph = _get_graph()
+    cfg = {"configurable": {"thread_id": thread_id}}
+
+    # 取上一轮结束后的历史消息，用于本轮查询改写
+    snap = graph.get_state(cfg)
+    prev_messages = snap.values.get("messages", []) if snap else []
+    history = _build_history_text(prev_messages)
+    effective_query = _rewrite_query(query, history, llm) if history else query
+
     result = graph.invoke({
         "messages": [HumanMessage(content=query)],
-        "query": query,
+        "query": effective_query,          # 检索 / 路由用的是消指代后的自包含问题
         "route": [],
         "school_docs": [],
         "admission_docs": [],
@@ -285,7 +360,7 @@ def ask_multi(query: str) -> dict:
         "admission_risk": "",
         "essay_outline": "",
         "answer": "",
-    })
+    }, config=cfg)
     # 与 synthesizer 使用同一套去重逻辑，保证底部卡片 [N] == 答案里的 [资料N]
     all_docs: List[Document] = []
     for key in ("school", "admission", "essay"):
