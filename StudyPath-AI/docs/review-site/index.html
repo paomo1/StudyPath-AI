@@ -81,9 +81,9 @@
   </div>
 
   <div class="card">
-    <h2>2. RAG 架构（串行链）</h2>
+    <h2>2. RAG 架构（并行编排）</h2>
     <ul>
-      <li><code>START → supervisor → 3 worker → synthesizer</code>（worker 未命中则跳过，非并行）</li>
+      <li><code>START → supervisor → 3 worker（并行 fan-out）→ synthesizer</code>（三 worker 同一 superstep 并发；未命中返回 <code>{}</code> 跳过；各写专属字段无需 reducer）</li>
       <li>检索：MMR <code>k=8</code> / <code>fetch_k=20</code></li>
       <li>建库：<code>rag/build_vectorstore.py</code> → 写 <code>rag/chroma_db/</code>（跑一次即可重建）</li>
       <li>配置：<code>rag/config.py</code>（<code>CHROMA_DIR</code> / <code>TOP_K</code> / <code>fetch_k</code>）</li>
@@ -113,7 +113,7 @@
   <div class="card">
     <h2>5. 关键文件速查</h2>
     <ul>
-      <li><code>rag/agents.py</code> —— 多智能体 StateGraph（串行）</li>
+      <li><code>rag/agents.py</code> —— 多智能体 StateGraph（并行）</li>
       <li><code>rag/qa.py</code> —— 单 agent LCEL 检索链</li>
       <li><code>rag/build_vectorstore.py</code> —— 建 Chroma 库</li>
       <li><code>rag/config.py</code> —— CHROMA_DIR + data/raw 路径 + 模型名</li>
@@ -128,7 +128,7 @@
   <div class="card">
     <h2>6. 一句话答辩口径</h2>
     <ul>
-      <li>StudyPath 是 AI 留学申请规划助手：用 <b>Chroma 本地向量库 + DashScope 嵌入</b>做真实可溯源 RAG，LangGraph 多智能体串行编排，外层接 Dify / N8N / Gradio；LoRA 微调做风格适配，但事实准确性仍依赖 RAG 检索而非生成。</li>
+      <li>StudyPath 是 AI 留学申请规划助手：用 <b>Chroma 本地向量库 + DashScope 嵌入</b>做真实可溯源 RAG，LangGraph 多智能体并行编排（三 worker 同 superstep 并发 fan-out/fan-in），外层接 Dify / N8N / Gradio；LoRA 微调做风格适配，但事实准确性仍依赖 RAG 检索而非生成。</li>
     </ul>
   </div>
 

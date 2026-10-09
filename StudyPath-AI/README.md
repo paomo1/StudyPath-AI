@@ -16,7 +16,7 @@
 ## 技术架构
 
 四层解耦：
-1. **内核层（智能核心）**：LangChain 1.x（DocumentLoader / Splitter / Embeddings 接入 / VectorStore 封装 / LCEL 检索链 / Prompt 模板）+ **LangGraph**（`StateGraph` 手写 supervisor-worker：选校策略师 / 录取风险评估师 / 文书规划师 三 worker 串行协同 + Synthesizer）。
+1. **内核层（智能核心）**：LangChain 1.x（DocumentLoader / Splitter / Embeddings 接入 / VectorStore 封装 / LCEL 检索链 / Prompt 模板）+ **LangGraph**（`StateGraph` 手写 supervisor-worker：选校策略师 / 录取风险评估师 / 文书规划师 三 worker 并行协同（同一 superstep 并发 fan-out/fan-in）+ Synthesizer）。
 2. **交互层（用户入口）**：本地 Gradio 驾驶舱（localhost:7860）+ 线上 Dify Chatflow（已发布）。
 3. **自动化层**：N8N 本地 docker 工作流（表单 → Dify API → 飞书推送）。
 4. **模型层**：LoRA / QLoRA 领域微调（LLaMA Factory）。

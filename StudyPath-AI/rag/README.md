@@ -28,32 +28,31 @@
 ┌─────────────┐
 │ Supervisor  │  LLM 决策：本轮该激活哪些专家，落库 route=['school','admission','essay']
 └──────┬──────┘
-       │
-       ▼
+       │  并行 fan-out（同一 superstep，LangGraph 并发执行）
+       ├───────────────┬───────────────┐
+       ▼               ▼               ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ worker_school│ │worker_admiss.│ │ worker_essay │   route 命中 → 检索本库 + 角色分析
+│ 院校项目库    │ │ 录取案例库    │ │ 文书范例库    │   未命中 → 返回 {}，零开销
+└──────┬───────┘ └──────┬───────┘ └──────┬───────┘
+       │  fan-in（全部完成后才推进）
+       └───────────────┬───────────────┘
+                       ▼
 ┌──────────────────┐
-│ worker_school    │  route 命中 → 检索院校项目库 + 角色分析；未命中 → 跳过
+│   Synthesizer    │  LLM 汇总三份业务结论 → 全局统一编号 → 最终答复
 └────────┬─────────┘
          ▼
-┌──────────────────┐
-│ worker_admission │  route 命中 → 检索录取案例库 + 角色分析；未命中 → 跳过
-└────────┬─────────┘
-         ▼
-┌──────────────────┐
-│ worker_essay     │  route 命中 → 检索文书范例库 + 角色分析；未命中 → 跳过
-└────────┬─────────┘
-         ▼
-   ┌──────────────┐
-   │ Synthesizer  │  LLM 汇总三份业务结论 → 全局统一编号 → 最终答复
-   └──────┬───────┘
-          ▼
    Web UI（Gradio）/ CLI（app_multi）
 ```
 
-> ⚠️ **拓扑说明（对着代码说）**：`add_edge` 连接出的是一条**固定串行链**
-> （`START → supervisor → worker_school → worker_admission → worker_essay → synthesizer → END`），
-> **不是并行分支**。Supervisor 的 `route` 决定的是"哪些 worker 真正干活"——
-> 未命中的 worker 直接跳过、不检索不调用 LLM。这样既保留了"按需派单"的收益，
-> 又让每次运行的执行路径可预测、易调试。
+> ⚠️ **拓扑说明（对着代码说）**：三个 worker 挂在 supervisor 的**同一条出边上**，
+> 属于 LangGraph 的同一个 superstep，**并发执行**（实测见
+> `rag/test_parallel_topology.py`：假 LLM 计时，三 worker 起始时间差 0.00s，
+> 端到端 3.04s vs 串行版理论 5.00s）。并发安全的关键是三个 worker **各写专属
+> State 字段**（`school_*` / `admission_*` / `essay_*`），不存在同 key 更新，
+> 因此无需引入 reducer。Supervisor 的 `route` 决定"哪些 worker 真正干活"——
+> 未命中的 worker 返回 `{}` 空转跳过、不检索不调用 LLM，"并行执行"与"按需派单"
+> 同时成立。8 条边全部是 `add_edge` 直连，无 conditional_edges。
 
 **为什么用多智能体？** 单链 RAG 只能"一把梭"检索全部资料，容易信息混杂、顾此失彼。
 多智能体让每个专家只盯自己的库（院校库只答项目细节、案例库只做背景匹配、文书库只给范文），

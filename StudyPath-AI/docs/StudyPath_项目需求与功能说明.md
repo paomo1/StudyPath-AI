@@ -45,7 +45,7 @@
   - `admission`（录取风险评估师）：以候选校 + 用户背景为输入，对比真实录取 / 拒信案例，输出竞争力定位、风险点与补齐建议。
   - `essay`（文书规划师）：检索同方向优秀文书并拆解结构，输出文书大纲、段落要点与素材清单。
 - **Synthesizer（综合器）**：消费三个 Worker 的结构化结论，去重、统一编号、按时间轴整合为五阶段申请规划（选校定稿 → 材料准备 → 文书写作 → 网申提交 → 面试准备）。
-- **当前实现**：三个 Worker 链式串行（add_edge），简单可控；瓶颈在 Synthesizer 生成与多 Worker 角色分析的多轮 LLM 调用。
+- **当前实现**：三个 Worker 并行执行（挂在 supervisor 同一条出边上，同一 superstep 并发 fan-out，fan-in 汇合到 Synthesizer）；各 Worker 只写专属 State 字段（school_* / admission_* / essay_*），无同 key 竞态、无需 reducer。实测见 `rag/test_parallel_topology.py`（假 LLM 计时：端到端 ≈ 3s，串行版 ≈ 5s）。
 
 ### 2.3 学术驾驶舱（Gradio 前端）
 
@@ -151,7 +151,7 @@
 - 多模态 OCR 解析用户简历/成绩单（架构里可接入，当前未实现）。
 - 自动化的申请 deadline 提醒与材料清单推送（N8N 可扩展）。
 - 更重的 Rerank 模型（当前用 MMR，未接入独立 Rerank）。
-- Worker 并行化（当前链式串行，理论上可并行）。
+- Worker 按需动态裁剪到「部分并行」（当前 supervisor 全量路由三路并行；可演进为 conditional_edges / Send API 按 query 类型只派子集）。
 - 用户登录与会话历史持久化（当前单轮无状态）。
 
 ---

@@ -75,7 +75,7 @@
 
   <!-- ===== 阶段三 LangGraph 多智能体放大图 ===== -->
   <rect x="40" y="280" width="1180" height="315" rx="14" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
-  <text x="64" y="314" class="lg-h">阶段三核心 · LangGraph 多智能体编排（串行链 + 条件执行）</text>
+  <text x="64" y="314" class="lg-h">阶段三核心 · LangGraph 多智能体编排（并行 fan-out/fan-in + 条件执行）</text>
 
   <!-- Supervisor -->
   <rect x="80" y="410" width="150" height="105" rx="10" fill="#065F46"/>
@@ -83,7 +83,7 @@
   <text x="155" y="474" text-anchor="middle" class="node-tw">LLM 路由决策</text>
   <text x="155" y="494" text-anchor="middle" class="node-tw">决定激活哪些专家</text>
 
-  <!-- 3 Workers（串行） -->
+  <!-- 3 Workers（并行 fan-out：同一 superstep 并发执行） -->
   <rect x="300" y="336" width="250" height="76" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
   <text x="425" y="364" text-anchor="middle" class="node-h">选校策略师 · school</text>
   <text x="425" y="388" text-anchor="middle" class="node-t">检索院校项目库 → 冲 / 稳 / 保 梯度建议</text>
@@ -102,15 +102,18 @@
   <text x="705" y="474" text-anchor="middle" class="node-tw">汇总三份业务结论</text>
   <text x="705" y="494" text-anchor="middle" class="node-tw">全局统一编号来源卡片</text>
 
-  <!-- 连接箭头（串行链） -->
-  <line x1="230" y1="450" x2="296" y2="378" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
-  <line x1="425" y1="412" x2="425" y2="422" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
-  <line x1="425" y1="500" x2="425" y2="510" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
-  <line x1="550" y1="545" x2="616" y2="480" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <!-- 连接箭头（并行 fan-out / fan-in） -->
+  <line x1="230" y1="462" x2="296" y2="376" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <line x1="230" y1="462" x2="296" y2="462" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <line x1="230" y1="462" x2="296" y2="548" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <line x1="554" y1="374" x2="616" y2="458" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <line x1="554" y1="462" x2="616" y2="462" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <line x1="554" y1="550" x2="616" y2="466" stroke="#047857" stroke-width="2.5" marker-end="url(#arrowG)"/>
 
-  <text x="432" y="421" class="mini">串行</text>
-  <text x="432" y="509" class="mini">串行</text>
-  <text x="150" y="530" class="mini">route 未命中的 worker 直接跳过</text>
+  <text x="248" y="416" class="mini">并行 fan-out</text>
+  <text x="558" y="540" class="mini">fan-in 汇合</text>
+  <text x="150" y="530" class="mini">route 未命中的 worker 返回 {}，直接跳过</text>
+  <text x="300" y="600" class="mini">三 worker 各写专属 State 字段（school_* / admission_* / essay_*），无同 key 竞态、无需 reducer</text>
 
   <!-- 右侧数据流标注 -->
   <text x="830" y="346" class="note">知识库：Chroma 向量库（本地持久化）</text>

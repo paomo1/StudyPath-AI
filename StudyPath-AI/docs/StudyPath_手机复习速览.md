@@ -9,8 +9,8 @@
 - 框架：LangChain LCEL 检索链 + LangGraph 多智能体
 - UI：Gradio 驾驶舱（7860）+ Dify 知识库 + N8N 飞书推送
 
-## 2. RAG 架构（串行链）
-`START → supervisor → 3 个 worker → synthesizer`（worker 未命中则跳过，不并行）
+## 2. RAG 架构（并行编排）
+`START → supervisor → 3 个 worker（并行 fan-out）→ synthesizer`（worker 未命中返回 {} 跳过；三 worker 同一 superstep 并发，各写专属字段无需 reducer）
 - 检索：MMR `k=8` / `fetch_k=20`
 - 建库：`rag/build_vectorstore.py` → 写 `rag/chroma_db/`（跑一次即可重建）
 - 配置：`rag/config.py`（`CHROMA_DIR` / `TOP_K` / `fetch_k`）
@@ -28,7 +28,7 @@
 - ⚠️ 同步风险：本地 `model/lora/` 为 8-20，若 AutoDL 10-02~10-04 重训需 scp 拉回
 
 ## 5. 关键文件速查
-- `rag/agents.py` —— 多智能体 StateGraph（supervisor+3worker+synthesizer 串行）
+- `rag/agents.py` —— 多智能体 StateGraph（supervisor + 3 worker 并行 + synthesizer）
 - `rag/qa.py` —— 单 agent LCEL 检索链
 - `rag/build_vectorstore.py` —— 建 Chroma 库
 - `rag/config.py` —— `CHROMA_DIR` + `data/raw` xlsx 路径 + 模型名
@@ -39,4 +39,4 @@
 - `docs/全流程架构图.svg` —— 已校正为 Chroma
 
 ## 6. 一句话答辩口径
-StudyPath 是 AI 留学申请规划助手：用 **Chroma 本地向量库 + DashScope 嵌入**做真实可溯源 RAG，LangGraph 多智能体串行编排，外层接 Dify / N8N / Gradio；LoRA 微调做风格适配，但事实准确性仍依赖 RAG 检索而非生成。
+StudyPath 是 AI 留学申请规划助手：用 **Chroma 本地向量库 + DashScope 嵌入**做真实可溯源 RAG，LangGraph 多智能体并行编排（三 worker 同 superstep 并发 fan-out/fan-in），外层接 Dify / N8N / Gradio；LoRA 微调做风格适配，但事实准确性仍依赖 RAG 检索而非生成。
