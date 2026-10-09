@@ -512,6 +512,7 @@
             "synthesizer": 35.05
           }
         },
+        "route_matched": true,
         "worker_speedup": 2.98
       },
       "单路命中": {
@@ -540,7 +541,8 @@
             "synthesizer": 25.56
           }
         },
-        "worker_speedup": 2.58
+        "route_matched": false,
+        "worker_speedup": null
       }
     },
     "retrieval": {

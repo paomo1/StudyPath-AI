@@ -9,6 +9,8 @@ supervisor(路由) / 三个 worker(各自检索 + 角色分析) / synthesizer(�
 串行图依次执行，worker 段耗时 = sum(三者)。两者之比即编排并行收益。
 
 两条 query 一起测，是为了暴露收益的路由依赖性：命中越多，并行省得越多。
+supervisor 是真实 LLM 调用（temperature>0），两次路由可能不一致；不一致说明两图
+干的活不一样，该条不计加速比（route_matched=false），只留分段耗时备查。
 
 结果写入 data/processed/rag_metrics.json：
     latency.topology_ab  —— 并行 / 串行对照（含 route、三段时间、答案字数）
@@ -129,11 +131,19 @@ def main():
             print(f"            supervisor {seg['supervisor']}s | "
                   f"workers {seg['workers']}s | synthesizer {seg['synthesizer']}s")
         p, s = entry["parallel"], entry["serial"]
+        # supervisor 每次都是真实 LLM 调用，temperature>0 时两次路由可能不一致。
+        # 路由不同就意味着两图干的活不一样，worker 段耗时不可直接相比，加速比记 null。
+        matched = sorted(p["route"]) == sorted(s["route"])
+        entry["route_matched"] = matched
         gain = (round(s["segments_s"]["workers"] / p["segments_s"]["workers"], 2)
-                if p["segments_s"]["workers"] else None)
+                if matched and p["segments_s"]["workers"] else None)
         entry["worker_speedup"] = gain
-        print(f"            -> worker 段 {s['segments_s']['workers']}s => "
-              f"{p['segments_s']['workers']}s，加速 {gain}x")
+        if matched:
+            print(f"            -> worker 段 {s['segments_s']['workers']}s => "
+                  f"{p['segments_s']['workers']}s，加速 {gain}x")
+        else:
+            print(f"            -> ⚠️ 两图路由不一致（parallel={p['route']} / "
+                  f"serial={s['route']}），worker 段不可直接相比，加速比记 null")
         ab[label] = entry
 
     retr = measure_retrieval()

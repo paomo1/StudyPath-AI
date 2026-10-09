@@ -40,7 +40,7 @@ SHEET_SCHOOLS = "院校项目库"   # 17 列, 100 条
 SHEET_CASES = "录取案例库"     # 12 列, 50 条
 SHEET_ESSAYS = "文书范例库"    # 6 列, 30 条
 
-# ===================== DashScope (OpenAI 兼容端点) =====================
+# ===================== DashScope（LLM 走兼容端点 / 嵌入走原生 SDK） =====================
 # 密钥仅从 .env 的 DASHSCOPE_API_KEY 读取，绝不在代码里写死。
 # 缺失时直接报错并给出配置提示，避免把"密钥为空"带进运行期。
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
@@ -56,7 +56,7 @@ DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 CHAT_MODEL = "qwen-plus"        # 也可 qwen-turbo(省钱) / qwen-max(强)
 EMBED_MODEL = "text-embedding-v3"
 
-# 每次向量化单批大小（dashscope OpenAI 兼容端点对小批更稳）
+# 每次向量化单批大小（嵌入走原生 SDK，手动分批避免单次条数上限）
 EMBED_BATCH = 10
 # 单条文本字符上限（embedding 模型 ~2048 tokens ≈ 6000~7000 中文字，留安全余量）
 MAX_CONTENT_CHARS = 2000

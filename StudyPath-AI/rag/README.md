@@ -48,7 +48,7 @@
 > ⚠️ **拓扑说明（对着代码说）**：三个 worker 挂在 supervisor 的**同一条出边上**，
 > 属于 LangGraph 的同一个 superstep，**并发执行**（实测见
 > `rag/test_parallel_topology.py`：假 LLM 计时，三 worker 起始时间差 0.00s，
-> 端到端 3.04s vs 串行版理论 5.00s）。并发安全的关键是三个 worker **各写专属
+> 端到端 ≈ 3.0s vs 串行版理论 5.0s）。并发安全的关键是三个 worker **各写专属
 > State 字段**（`school_*` / `admission_*` / `essay_*`），不存在同 key 更新，
 > 因此无需引入 reducer。Supervisor 的 `route` 决定"哪些 worker 真正干活"——
 > 未命中的 worker 返回 `{}` 空转跳过、不检索不调用 LLM，"并行执行"与"按需派单"
@@ -96,7 +96,10 @@ StudyPath-AI/rag/
 ├── demo_capture.py            # 跑一次真实问答并落盘 rag_demo_capture.json（取证用）
 ├── build_demo_panel.py        # 由上面那个 json 渲染 rag_demo_panel.html（展示面板，不手写）
 ├── eval_retrieval.py          # 五层检索评测 -> data/processed/rag_metrics.json
-├── test_key.py / test_min_embed.py  # 最小验证脚本（key + embedding 可用性）
+├── eval_topology.py           # 并行 / 串行拓扑对照评测（worker 段耗时 + 检索层耗时）
+├── measure_latency.py         # 多智能体端到端耗时实测（参考值，受网络与生成长度影响）
+├── test_parallel_topology.py  # 并行拓扑验证（假 LLM 计时，不发起真实请求）
+├── test_key.py / test_min_embed.py / test_dashscope_embed.py  # 最小验证脚本（key + embedding 可用性）
 ├── requirements.txt
 ├── README.md
 └── chroma_db/                 # 运行 build 后自动生成（向量库落盘，已在 .gitignore 中）

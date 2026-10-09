@@ -307,14 +307,21 @@ def _get_graph():
     return _GRAPH
 
 
-def _build_history_text(messages, max_turns: int = 4) -> str:
-    """把历史消息（不含最后一条，即当前轮）拼成 用户/助手 交替文本。
+def _build_history_text(messages, max_turns: int = 4, drop_last: bool = False) -> str:
+    """把历史消息拼成 用户/助手 交替文本，只保留最近 max_turns 轮。
 
-    只保留最近 max_turns 轮，防止上下文无限膨胀。空则返回 ""。
+    默认保留传入的全部消息；drop_last=True 用于传进来的是「含当前轮」的完整
+    列表、需要把当前这一句排除掉的场景。
+
+    助手上一轮的答复必须留在文本里：里面出现的学校名 / 项目名，正是下一轮
+    "那它的截止日期呢" 这类指代要消解的对象。丢掉助手回答，改写器就无从判断
+    "它"指的是谁。空则返回 ""。
     """
-    prev = messages[:-1] if messages else []
+    msgs = list(messages or [])
+    if drop_last:
+        msgs = msgs[:-1]
     turns = []
-    for m in prev:
+    for m in msgs:
         t = getattr(m, "type", "")
         role = "用户" if t == "human" else ("助手" if t == "ai" else None)
         if role is None:

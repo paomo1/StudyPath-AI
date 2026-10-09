@@ -14,13 +14,14 @@
 运行（ai-langchain 环境）：
     python rag/test_parallel_topology.py
 """
+import os
 import sys
 import time
 import threading
 from types import SimpleNamespace
 
 sys.stdout.reconfigure(encoding="utf-8")
-sys.path.insert(0, r"F:\留学项目\StudyPath-AI\rag")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from langchain_core.documents import Document
 

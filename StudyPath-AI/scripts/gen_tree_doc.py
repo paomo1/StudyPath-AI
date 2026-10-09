@@ -56,18 +56,19 @@ A = {
     "StudyPath-AI/rag/qa.py": "单 agent 检索链（LCEL）。含 build_llm() / retrieve_docs() / answer_from_docs()，MMR 检索 k=8 fetch_k=20",
     "StudyPath-AI/rag/query_norm.py": "查询侧校名别名归一化：从 xlsx 动态反查，按 token 长度降序只替换最长命中，避免 UW 之类误伤",
     "StudyPath-AI/rag/agents.py": "★ LangGraph 多智能体：START → supervisor → 3 worker（并行 fan-out）→ synthesizer 的 StateGraph",
-    "StudyPath-AI/rag/agents.py.bak-20261009": "并行化前的串行链旧版存档（2026-10-09 备份，留作对照）",
-    "StudyPath-AI/rag/test_parallel_topology.py": "★ 并行拓扑验证脚本：假 LLM 计时证明三 worker 同 superstep 并发（端到端 3.04s vs 串行理论 5.00s），并打印边表供 PPT 截图",
+    "StudyPath-AI/rag/test_parallel_topology.py": "★ 并行拓扑验证脚本：假 LLM 计时证明三 worker 同 superstep 并发（端到端 ≈ 3.0s vs 串行理论 5.0s），并打印边表供 PPT 截图",
+    "StudyPath-AI/rag/eval_topology.py": "★ 拓扑对照评测：同一条 query 分别喂并行图与串行图，拆出 supervisor / worker / synthesizer 三段耗时，外加检索层耗时，写回 rag_metrics.json",
+    "StudyPath-AI/rag/measure_latency.py": "多智能体端到端耗时实测（真调云端）：含网络与生成长度影响，只作记录，不当工程指标",
     "StudyPath-AI/rag/app.py": "命令行交互 demo（单 agent）",
     "StudyPath-AI/rag/app_multi.py": "命令行交互 demo（多智能体）",
-    "StudyPath-AI/rag/app_gradio.py": "★ 学术驾驶舱网页版（1012 行）：Gradio UI + 自研 CSS/JS 背景层，演示主入口 localhost:7860",
+    "StudyPath-AI/rag/app_gradio.py": "★ 学术驾驶舱网页版：Gradio UI + 自研 CSS/JS 背景层，演示主入口 localhost:7860",
     "StudyPath-AI/rag/app_gradio_diag.py": "诊断版：最小可运行核，用于排查 Gradio 4.x 下 Textbox/Button 的渲染与 style 命中问题",
     "StudyPath-AI/rag/app_gradio_v1_basic.py": "驾驶舱 v1 白底备份版（保留作对照）",
     "StudyPath-AI/rag/demo_capture.py": "跑一次真实检索+问答并落盘 JSON，供 PPT 生成真实截图。单次检索、同源生成、路径基于 __file__",
     "StudyPath-AI/rag/rag_demo_capture.json": "demo 抓取数据：真实召回文档 + 真实回答 + 真实耗时",
     "StudyPath-AI/rag/rag_demo_panel.html": "RAG demo 展示面板（由 build_demo_panel.py 从上面的 json 自动生成，杜绝手写不一致）",
     "StudyPath-AI/rag/build_demo_panel.py": "从 rag_demo_capture.json 生成展示面板 HTML，含极简 Markdown 渲染 + 截断时补全 ** 标记",
-    "StudyPath-AI/rag/eval_retrieval.py": "★ 五层检索评测脚本（425 行）：规范集/对抗集 HitRate·MRR、生成忠实度、路由准确率、延迟 P50/P95",
+    "StudyPath-AI/rag/eval_retrieval.py": "★ 五层检索评测脚本：规范集/对抗集 HitRate·MRR、生成忠实度、路由准确率、延迟 P50/P95",
     "StudyPath-AI/rag/test_key.py": "验证脚本：绕开 langchain 用 OpenAI 兼容端点验证 key 是否有效（只打印前缀不泄露）",
     "StudyPath-AI/rag/test_min_embed.py": "验证脚本：最小独立 embedding 测试，只用 dashscope SDK 隔离验证 key + SDK 是否跑通",
     "StudyPath-AI/rag/test_dashscope_embed.py": "验证脚本：dashscope 原生 SDK 多文本对照测试",
@@ -127,7 +128,7 @@ A = {
     "StudyPath-AI/docs/完整目录树.md": "◀ 本文件的 Markdown 版本，便于 grep / 终端查看",
 
     # ===== 脚本 scripts/ =====
-    "StudyPath-AI/scripts/build_pptx.py": "★ PPT 生成器（1293 行）：把答辩内容逐页导出为 23 页 .pptx（三档底色 + 含图页配「这张图证明了什么」标注条）",
+    "StudyPath-AI/scripts/build_pptx.py": "★ PPT 生成器：把答辩内容逐页导出为 .pptx（三档底色 + 含图页配「这张图证明了什么」标注条）",
     "StudyPath-AI/scripts/gen_topology_png.py": "生成并行版 LangGraph 拓扑 PNG（matplotlib 手绘 fan-out/fan-in），输出到答辩 PPT 素材目录，覆盖前自动备份旧图",
     "StudyPath-AI/scripts/gen_pptx_preview.py": "◀ 版式预览器：把 .pptx 逐形状还原成 HTML（坐标/字号/颜色，图片 base64 内嵌），--only N 导出单页供 headless 截图核对。本机无 PowerPoint，这是验收版式的标准手法",
     "StudyPath-AI/scripts/启动驾驶舱.ps1": "启动脚本：清理 7860 端口 → 启动 app_gradio.py。路径全部基于脚本位置推导，可换机器",
@@ -243,7 +244,7 @@ for f in all_files:
 if missing:
     raise SystemExit("❌ 以下文件没有标注，请补全：\n  " + "\n  ".join(missing))
 
-no_dir_desc = [d for d in all_dirs if d not in D]
+no_dir_desc = [d for d in all_dirs if d not in D and "__pycache__" not in d]
 if no_dir_desc:
     raise SystemExit("❌ 以下目录没有标注：\n  " + "\n  ".join(no_dir_desc))
 

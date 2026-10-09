@@ -16,6 +16,10 @@ model/lora/tokenizer.json
 __pycache__/
 *.pyc
 
+# ===== 开发期备份文件（不进版本库；对照版本留在本地归档目录）=====
+*.bak
+*.bak-*
+
 # ===== 环境 =====
 .venv/
 env/

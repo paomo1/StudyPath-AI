@@ -35,7 +35,7 @@
 - LangChain 1.x
 - LangGraph（多智能体框架）
 - RAG（Chroma + text-embedding-v3）
-- DashScope qwen-plus / text-embedding-v3（OpenAI 兼容端点）
+- DashScope qwen-plus（OpenAI 兼容端点）/ text-embedding-v3（原生 SDK）
 - Gradio（前端驾驶舱）
 - Dify（低代码应用）
 - N8N（自动化编排）
