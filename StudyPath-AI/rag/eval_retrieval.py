@@ -282,9 +282,14 @@ def _pct(samples, p):
     return round(s[f] + (s[c] - s[f]) * (k - f), 3)
 
 
-def eval_latency(chain, multi_fn, rag_queries, multi_queries):
-    """端到端延迟（含云端 LLM 往返，非纯本地耗时，报告里会注明）。"""
-    rag_t, multi_t = [], []
+def eval_latency(chain, rag_queries):
+    """RAG 单链端到端延迟（含云端 LLM 往返，非纯本地耗时，报告里会注明）。
+
+    多智能体链路的端到端耗时由 rag/measure_latency.py 单独产出：它给每条 query
+    独立 thread_id，避免复用同一会话时第 2 条起命中多轮追问分支、多算一次改写调用。
+    本函数不重复测，免得两边写同一个 latency.multi_agent 相互覆盖。
+    """
+    rag_t = []
     for q in rag_queries:
         t0 = time.time()
         try:
@@ -292,13 +297,6 @@ def eval_latency(chain, multi_fn, rag_queries, multi_queries):
         except Exception:
             continue
         rag_t.append(time.time() - t0)
-    for q in multi_queries:
-        t0 = time.time()
-        try:
-            multi_fn(q)
-        except Exception:
-            continue
-        multi_t.append(time.time() - t0)
 
     def pack(xs):
         if not xs:
@@ -312,7 +310,7 @@ def eval_latency(chain, multi_fn, rag_queries, multi_queries):
             "max": round(max(xs), 3),
         }
 
-    return {"rag_chain": pack(rag_t), "multi_agent": pack(multi_t)}
+    return {"rag_chain": pack(rag_t)}
 
 
 def main():
@@ -360,19 +358,13 @@ def main():
         "detail": detail,
     }
 
-    # D. 路由准确率（多智能体独有）+ E. 端到端延迟
-    from agents import ask_multi
+    # D. 路由准确率（多智能体独有）+ E. RAG 单链端到端延迟
     routing = eval_routing(None)
-    latency = eval_latency(
-        chain,
-        ask_multi,
-        [c["query"] for c in cases[:10]],   # RAG 单链 10 条
-        [c["query"] for c in cases[:5]],    # 多智能体 5 条（链路更长，取样少些省时间）
-    )
+    latency = eval_latency(chain, [c["query"] for c in cases[:10]])   # RAG 单链 10 条
 
-    # latency 下除了本轮测的 rag_chain / multi_agent，还可能有独立脚本写入的
-    # topology_ab / retrieval（eval_topology.py）。这里合并而不是整体覆盖，
-    # 免得重跑本脚本把那些字段冲掉。
+    # latency 下除本轮测的 rag_chain 外，还有独立脚本写入的字段：multi_agent
+    # （measure_latency.py）、topology_ab / retrieval（eval_topology.py）。
+    # 这里用 update 合并而不是整体覆盖，免得重跑本脚本把那些字段冲掉。
     old_lat = {}
     if os.path.exists(METRICS):
         with open(METRICS, encoding="utf-8") as f:
@@ -411,10 +403,10 @@ def main():
         print(f"    精确率 exact（不多不少） : {routing['exact']:.1%}")
         print(f"    路由分布: {routing['route_distribution']}")
 
-    if latency:
+    if old_lat:
         print(f"\n[E] 端到端延迟（含云端 LLM 往返）")
         for k, label in [("rag_chain", "RAG 单链   "), ("multi_agent", "多智能体链 ")]:
-            m = latency.get(k)
+            m = old_lat.get(k)
             if m:
                 print(f"    {label}: P50={m['p50']}s  P95={m['p95']}s  mean={m['mean']}s  (n={m['n']})")
 

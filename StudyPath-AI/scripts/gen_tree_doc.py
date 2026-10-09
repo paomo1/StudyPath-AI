@@ -45,7 +45,7 @@ A = {
     "StudyPath-AI/data/processed/ab_compare.json": "★ A/B 对照结果：同 prompt 基座 vs 基座+LoRA，3/3 组输出变化（identical=false 即证据）",
     "StudyPath-AI/data/processed/eval_results.json": "微调自动评估成绩单：指令遵循率 100.0%（20/20）、平均 ROUGE-L 0.5731，含生成原文留档",
     "StudyPath-AI/data/processed/rag_evalset.jsonl": "RAG 检索评测集 50 题：含规范问法 + 口语化对抗样本",
-    "StudyPath-AI/data/processed/rag_metrics.json": "RAG 五层评测指标：A规范/B对抗 HitRate·MRR/C忠实度/D路由准确率(30题)/E延迟 P50·P95",
+    "StudyPath-AI/data/processed/rag_metrics.json": "RAG 五层评测指标：A规范/B对抗 HitRate·MRR/C忠实度/D路由准确率(30题)/E RAG 单链延迟 P50·P95，另有并行拓扑 A/B 与检索层耗时",
 
     # ===== RAG 应用层 rag/ =====
     "StudyPath-AI/rag/README.md": "RAG 层说明：架构图（并行 fan-out/fan-in）/技术栈/目录结构/本机运行步骤/数据真实性说明/功能完成度/常见坑",
@@ -68,7 +68,7 @@ A = {
     "StudyPath-AI/rag/rag_demo_capture.json": "demo 抓取数据：真实召回文档 + 真实回答 + 真实耗时",
     "StudyPath-AI/rag/rag_demo_panel.html": "RAG demo 展示面板（由 build_demo_panel.py 从上面的 json 自动生成，杜绝手写不一致）",
     "StudyPath-AI/rag/build_demo_panel.py": "从 rag_demo_capture.json 生成展示面板 HTML，含极简 Markdown 渲染 + 截断时补全 ** 标记",
-    "StudyPath-AI/rag/eval_retrieval.py": "★ 五层检索评测脚本：规范集/对抗集 HitRate·MRR、生成忠实度、路由准确率、延迟 P50/P95",
+    "StudyPath-AI/rag/eval_retrieval.py": "★ 五层检索评测脚本：规范集/对抗集 HitRate·MRR、生成忠实度、路由准确率、RAG 单链延迟 P50/P95",
     "StudyPath-AI/rag/test_key.py": "验证脚本：绕开 langchain 用 OpenAI 兼容端点验证 key 是否有效（只打印前缀不泄露）",
     "StudyPath-AI/rag/test_min_embed.py": "验证脚本：最小独立 embedding 测试，只用 dashscope SDK 隔离验证 key + SDK 是否跑通",
     "StudyPath-AI/rag/test_dashscope_embed.py": "验证脚本：dashscope 原生 SDK 多文本对照测试",
