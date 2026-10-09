@@ -3,18 +3,8 @@
 LangGraph StateGraph 实现的 supervisor-worker 多智能体。
 
     query -> Supervisor（LLM 决定派哪些 worker）
-          -> School / Admission / Essay（并行 fan-out：各自检索对应 RAG 库，互不阻塞）
-          -> Synthesizer（fan-in 汇合，把多路结论整合成最终答复）
-
-拓扑要点：三个 worker 挂在 supervisor 的同一条出边上，LangGraph 会在同一个
-superstep 内并发执行它们，全部完成后才推进到 synthesizer（Pregel 语义）。
-因此端到端耗时 ≈ supervisor + max(三 worker) + synthesizer，
-而不是串行版的 supervisor + worker1 + worker2 + worker3 + synthesizer。
-
-并发安全：三个 worker 只写自己专属的 State 字段
-（school_* / admission_* / essay_*），不存在同 key 竞态，故无需 reducer。
-未被 supervisor 选中的 worker 直接返回 {}，零额外开销——
-"路由裁剪"与"并行执行"由此同时成立。
+          -> School / Admission / Essay（各自检索对应的 RAG 库，add_edge 串行）
+          -> Synthesizer（汇总多个 worker 的结论成最终答复）
 
 worker 复用 qa.retrieve_docs()，不重复实现检索。
 """
@@ -280,14 +270,9 @@ def build_graph():
     g.add_node("synthesizer", synthesizer)
 
     g.add_edge(START, "supervisor")
-    # ---- 并行 fan-out：三个 worker 同属一个 superstep，LangGraph 并发执行 ----
-    # 只有 supervisor 路由命中的 worker 才真正干活，其余立即返回 {}。
     g.add_edge("supervisor", "worker_school")
-    g.add_edge("supervisor", "worker_admission")
-    g.add_edge("supervisor", "worker_essay")
-    # ---- fan-in：三个 worker 全部结束后才进入 synthesizer ----
-    g.add_edge("worker_school", "synthesizer")
-    g.add_edge("worker_admission", "synthesizer")
+    g.add_edge("worker_school", "worker_admission")
+    g.add_edge("worker_admission", "worker_essay")
     g.add_edge("worker_essay", "synthesizer")
     g.add_edge("synthesizer", END)
     # 挂内存级 checkpointer：让 state 跨多次 invoke 保持（thread_id 维度），

@@ -10,6 +10,7 @@
 只基于检索到的资料回答，附来源，不编造。
 """
 from urllib.parse import urlparse
+import threading
 
 from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
@@ -57,6 +58,23 @@ def get_embeddings():
     return DashScopeEmbeddings()
 
 
+# 模块级单例：并发场景（多智能体三个 worker 并行检索）下共享同一个 Chroma 连接。
+# 若每次 new Chroma(persist_directory=...)，多个线程会各自打开同一个本地库，
+# 撞上 chromadb 的初始化竞态，实测报 "Could not connect to tenant default_tenant"。
+# 锁只保护首次构造，之后的 query 是只读操作。
+_VDB = None
+_VDB_LOCK = threading.Lock()
+
+
+def _get_vdb() -> Chroma:
+    """取（必要时构造）全局向量库实例。"""
+    global _VDB
+    with _VDB_LOCK:
+        if _VDB is None:
+            _VDB = Chroma(persist_directory=CHROMA_DIR, embedding_function=get_embeddings())
+    return _VDB
+
+
 def build_llm():
     """构建对话 LLM（qwen-plus，走 DashScope 的 OpenAI 兼容端点）。
 
@@ -74,8 +92,7 @@ def build_llm():
 
 
 def build_qa():
-    embeddings = get_embeddings()
-    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+    vectordb = _get_vdb()
     retriever = vectordb.as_retriever(
         search_type="mmr",  # 最大边际相关性：相关 + 多样，避免 4 条都是相似内容
         search_kwargs={"k": TOP_K, "fetch_k": 20},  # 先取 20 候选再用 MMR 精选出 8 条最相关且多样的
@@ -111,13 +128,15 @@ def ask(question: str) -> str:
 
 
 def get_retriever(sheet=None):
-    """可指定 sheet 过滤的检索器，供多智能体 worker 复用。"""
-    embeddings = get_embeddings()
-    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+    """可指定 sheet 过滤的检索器，供多智能体 worker 复用。
+
+    Chroma 连接走 _get_vdb() 单例：三个 worker 在同一 superstep 内并发检索时
+    共享同一连接、只读查询，不会重复打开本地库。
+    """
     kwargs = {"k": TOP_K, "fetch_k": 20}
     if sheet:
         kwargs["filter"] = {"source_sheet": sheet}
-    return vectordb.as_retriever(search_type="mmr", search_kwargs=kwargs)
+    return _get_vdb().as_retriever(search_type="mmr", search_kwargs=kwargs)
 
 
 def _source_item(d) -> dict | None:
