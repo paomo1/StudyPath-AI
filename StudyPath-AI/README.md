@@ -106,7 +106,8 @@ LangGraph 架构图、LoRA 训练曲线（`model/lora/training_loss.png`）等�
 | 口语化对抗集 HitRate@8 / MRR | 100% / 0.933 |
 | 生成忠实度：引用正确 `source_url` | **100%**（10 / 10） |
 | 路由覆盖率 | 100% |
-| 延迟 P50 / P95 | 2.67s / 9.04s（RAG）· 3.12s / 9.17s（多智能体） |
+| 编排并行收益 | 三 worker 段 139.88s → 46.99s（**2.98x**，同条件 A/B 实测） |
+| 检索层 P50 | 0.154s（本地 Chroma MMR，n=8） |
 
 **领域微调（LoRA 链路）**
 

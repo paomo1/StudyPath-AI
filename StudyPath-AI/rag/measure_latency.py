@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""多智能体链路端到端延迟实测（并行拓扑版）。
+"""多智能体链路端到端耗时实测（并行拓扑）。
 
-口径对齐 eval_retrieval.py 的 eval_latency：取规范问法集前 5 条 query，
-真实调用 ask_multi（含 DashScope 往返与 Chroma 检索），统计 P50 / mean / min / max。
+取规范问法集前 5 条 query，真实调用 ask_multi（含 DashScope 往返与 Chroma 检索），
+统计 P50 / mean / min / max，写回 data/processed/rag_metrics.json 的 latency.multi_agent。
 
-与旧评测的唯一差异：每条 query 用独立 thread_id。旧评测复用默认的 "demo"，
-第 2 条起命中多轮追问分支、额外多一次查询改写 LLM 调用，那属于对话能力的开销，
-不该算进单轮链路延迟。
+注意这是端到端绝对耗时：含云端 LLM 往返，随网络与服务端负载波动，且主要由最后一跳的
+生成长度决定（实测约 55 字/秒，1700 字答案约 30 秒）。所以它只作记录，不当工程指标；
+要说明编排收益请用 rag/eval_topology.py 的同条件 A/B。
 
-结果写回 data/processed/rag_metrics.json，并把串行版旧值挪到
-multi_agent_serial_baseline 作对照。
+每条 query 用独立 thread_id：若复用同一 thread，第 2 条起会命中多轮追问分支、
+额外多一次查询改写 LLM 调用，那属于对话能力的开销，不该算进单轮链路耗时。
 
-运行（ai-langchain 环境）：
+运行（ai-base / ai-langchain 环境均可）：
     python rag/measure_latency.py
 """
 import json
@@ -83,10 +83,6 @@ def main():
 
     metrics = json.load(open(METRICS, encoding="utf-8"))
     lat = metrics.setdefault("latency", {})
-    old = lat.get("multi_agent")
-    if old and "topology" not in old:
-        lat["multi_agent_serial_baseline"] = old
-        print(f"串行旧值已挪至 multi_agent_serial_baseline: P50 {old.get('p50')}s")
     lat["multi_agent"] = result
     with open(METRICS, "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)

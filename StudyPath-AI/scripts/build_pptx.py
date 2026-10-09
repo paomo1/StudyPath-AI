@@ -1159,7 +1159,7 @@ grid = [
     ("平均 ROUGE-L", "0.5731", "20 条测试集均值", NAVY),
     ("对抗集 HitRate@8", "100%", "检索命中率，全部命中", TEAL),
     ("对抗集 MRR", "0.933", "命中结果排序质量（越接近 1 越好）", TEAL),
-    ("响应延迟 P50", "2.67s / 3.12s", "RAG 单链 / 多智能体全流程", TEAL),
+    ("编排并行收益", "2.98x", "三 worker 段 sum → max，同条件 A/B 实测", TEAL),
 ]
 gw = Inches(3.83)
 gh = Inches(1.32)
@@ -1183,8 +1183,8 @@ add_text(s, M + Inches(6.26), Inches(4.92), Inches(5.45), Inches(0.28),
          "指标怎么测的", font_size=11, bold=True, color=NAVY)
 add_text(s, M + Inches(6.26), Inches(5.24), Inches(5.45), Inches(1.34),
          "检索侧：自建对抗集，把问题与两段内容相近但来源不同的文档配对，检验能否命中正确那一条。\n"
-         "生成侧：ROUGE-L 基于 20 条测试集；引用命中率以输出里出现知识库真实 URL 为准；"
-         "延迟取 P50，多智能体链路的 3.12s 已含 5 次 LLM 与 3 次检索。",
+         "生成侧：ROUGE-L 基于 20 条测试集；引用命中率以输出里出现知识库真实 URL 为准。\n"
+         "编排侧：同进程内并行图 / 串行图跑同一条 query 对照，取三个 worker 段的耗时之比。",
          font_size=9, color=T_BODY, line_spacing=1.25)
 
 

@@ -370,12 +370,21 @@ def main():
         [c["query"] for c in cases[:5]],    # 多智能体 5 条（链路更长，取样少些省时间）
     )
 
+    # latency 下除了本轮测的 rag_chain / multi_agent，还可能有独立脚本写入的
+    # topology_ab / retrieval（eval_topology.py）。这里合并而不是整体覆盖，
+    # 免得重跑本脚本把那些字段冲掉。
+    old_lat = {}
+    if os.path.exists(METRICS):
+        with open(METRICS, encoding="utf-8") as f:
+            old_lat = json.load(f).get("latency", {})
+    old_lat.update(latency)
+
     metrics = {
         "canonical": canon,
         "adversarial": advm,
         "faithfulness": faith,
         "routing": routing,
-        "latency": latency,
+        "latency": old_lat,
     }
     with open(METRICS, "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)

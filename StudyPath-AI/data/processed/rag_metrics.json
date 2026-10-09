@@ -475,11 +475,80 @@
     },
     "multi_agent": {
       "n": 5,
-      "p50": 3.119,
-      "p95": 9.17,
-      "mean": 4.539,
-      "min": 2.541,
-      "max": 10.574
+      "p50": 18.911,
+      "p95": 30.952,
+      "mean": 22.073,
+      "min": 12.78,
+      "max": 31.002,
+      "topology": "parallel"
+    },
+    "topology_ab": {
+      "多路命中": {
+        "parallel": {
+          "route": [
+            "school",
+            "admission",
+            "essay"
+          ],
+          "total_s": 86.86,
+          "answer_chars": 2987,
+          "segments_s": {
+            "supervisor": 0.69,
+            "workers": 46.99,
+            "synthesizer": 39.17
+          }
+        },
+        "serial": {
+          "route": [
+            "school",
+            "admission",
+            "essay"
+          ],
+          "total_s": 175.5,
+          "answer_chars": 2501,
+          "segments_s": {
+            "supervisor": 0.57,
+            "workers": 139.88,
+            "synthesizer": 35.05
+          }
+        },
+        "worker_speedup": 2.98
+      },
+      "单路命中": {
+        "parallel": {
+          "route": [
+            "school"
+          ],
+          "total_s": 32.03,
+          "answer_chars": 1678,
+          "segments_s": {
+            "supervisor": 0.5,
+            "workers": 9.17,
+            "synthesizer": 22.37
+          }
+        },
+        "serial": {
+          "route": [
+            "school",
+            "admission"
+          ],
+          "total_s": 49.81,
+          "answer_chars": 1953,
+          "segments_s": {
+            "supervisor": 0.56,
+            "workers": 23.7,
+            "synthesizer": 25.56
+          }
+        },
+        "worker_speedup": 2.58
+      }
+    },
+    "retrieval": {
+      "n": 8,
+      "p50": 0.154,
+      "mean": 0.149,
+      "min": 0.109,
+      "max": 0.178
     }
   }
 }
