@@ -71,19 +71,19 @@ python agents.py "我想申请美国CS硕士，GPA3.5托福100，推荐哪些学
 ```
 StudyPath-AI/
 ├── rag/                  # RAG + 多智能体核心（agents.py / qa.py / config.py / build_vectorstore.py / eval_retrieval.py / app_gradio.py）
-├── finetune/             # LoRA 微调模块
-│   ├── config.py / model.py / processed.py / train.py / evaluate.py / inference.py   # 微调代码
+├── finetune/             # 微调代码（训练 / 推理 / 评测 / 数据预处理，纯文本，全量进 git）
+│   ├── config.py / model.py / processed.py / train.py / evaluate.py / inference.py
 │   ├── download.py        # 基座下载（AutoDL / ModelScope 国内镜像）
 │   ├── qwen_lora_sft.yaml  # LLaMA Factory 训练配置
 │   ├── requirements.txt    # 微调依赖
 │   ├── autodl_train.sh     # 云端一键训练脚本
 │   └── README_AUTODL.md    # AutoDL 训练指南
-├── model/lora/           # LoRA 权重（adapter_model.safetensors，约 20MB，不进 git）
-├── annotations/          # 数据标注脚本与产物（annotated_dataset.jsonl）
+├── model/lora/           # 微调产物（adapter 权重 19.3MB 进 git；tokenizer.json 11MB 单独排除）
+├── annotations/          # 数据标注脚本与产物（output/annotated_dataset.jsonl + figures/ 5 张分布图）
 ├── data/raw/             # 唯一数据源：院校数据采集.xlsx（180 条，进 git）
-├── dify_kb/              # Dify 部署指南与知识库
-├── docs/                 # 设计文档与架构图（全流程架构图.svg / 需求说明.md / 微调骨架.md）
-├── scripts/              # 本地工具
+├── dify_kb/              # Dify 部署指南与知识库（院校项目库 / 录取案例库 / 文书范例库）
+├── docs/                 # 设计文档与架构图（全流程架构图.svg + StudyPath_*.md：需求说明 / 微调骨架 / 手机速览）
+├── scripts/              # 本地工具（build_pptx / gen_pptx_preview / gen_topology_png / gen_tree_doc）
 │   ├── build_pptx.py      # 答辩 PPT 生成脚本（输出路径在脚本顶部配置）
 │   └── 启动驾驶舱.ps1     # 一键启动 Gradio 驾驶舱
 ├── .env                  # 密钥（不进 git）

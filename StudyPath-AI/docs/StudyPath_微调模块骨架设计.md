@@ -57,11 +57,12 @@ StudyPath-AI/
 ├── cache/                        # 临时下载缓存（HF_HOME）
 ├── pretrained/                   # 基座（download.py 下载到这里，15GB，不进 git）
 │   └── Qwen2.5-7B-Instruct/
-├── model/                        # 微调产物（不进 git；可加白名单保留权重）
+├── model/                        # 微调产物（代码在 finetune/，这里是训练跑出来的东西）
 │   └── lora/
-│       ├── adapter_model.safetensors     # 约 20MB，核心产物
+│       ├── adapter_model.safetensors     # 约 19.3MB，核心产物（已入库）
 │       ├── adapter_config.json           # r=8 / alpha=16 / target=q,k,v,o_proj
-│       ├── tokenizer.json / chat_template.jinja
+│       ├── chat_template.jinja           # 对话模板存档（已入库）
+│       ├── tokenizer.json                # 11MB 词表，单独排除（推理链从基座取）
 │       ├── training_loss.png / training_eval_loss.png
 │       ├── train_results.json / trainer_state.json / all_results.json
 │       └── README.md                     # model card（含能力边界实测说明）
