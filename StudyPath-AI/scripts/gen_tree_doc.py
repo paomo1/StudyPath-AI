@@ -48,14 +48,16 @@ A = {
     "StudyPath-AI/data/processed/rag_metrics.json": "RAG 五层评测指标：A规范/B对抗 HitRate·MRR/C忠实度/D路由准确率(30题)/E延迟 P50·P95",
 
     # ===== RAG 应用层 rag/ =====
-    "StudyPath-AI/rag/README.md": "RAG 层说明：架构图（串行链）/技术栈/目录结构/本机运行步骤/数据真实性说明/功能完成度/常见坑",
+    "StudyPath-AI/rag/README.md": "RAG 层说明：架构图（并行 fan-out/fan-in）/技术栈/目录结构/本机运行步骤/数据真实性说明/功能完成度/常见坑",
     "StudyPath-AI/rag/config.py": "配置中心。零依赖加载根 .env（优先 python-dotenv，否则手动解析），暴露 CHROMA_DIR/TOP_K=8/fetch_k=20 等",
     "StudyPath-AI/rag/data_loader.py": "数据装载：xlsx 三 sheet → LangChain Document 列表 + 学校别名表",
     "StudyPath-AI/rag/dashscope_embeddings.py": "自实现 Embeddings 类：直接调 DashScope 原生 SDK（text-embedding-v3）",
     "StudyPath-AI/rag/build_vectorstore.py": "建向量库：切片 → 批量向量化 → 写入 Chroma（跑一次即可，产物可重建）",
     "StudyPath-AI/rag/qa.py": "单 agent 检索链（LCEL）。含 build_llm() / retrieve_docs() / answer_from_docs()，MMR 检索 k=8 fetch_k=20",
     "StudyPath-AI/rag/query_norm.py": "查询侧校名别名归一化：从 xlsx 动态反查，按 token 长度降序只替换最长命中，避免 UW 之类误伤",
-    "StudyPath-AI/rag/agents.py": "★ LangGraph 多智能体：START → supervisor → 3 worker → synthesizer 的 StateGraph（串行链）",
+    "StudyPath-AI/rag/agents.py": "★ LangGraph 多智能体：START → supervisor → 3 worker（并行 fan-out）→ synthesizer 的 StateGraph",
+    "StudyPath-AI/rag/agents.py.bak-20261009": "并行化前的串行链旧版存档（2026-10-09 备份，留作对照）",
+    "StudyPath-AI/rag/test_parallel_topology.py": "★ 并行拓扑验证脚本：假 LLM 计时证明三 worker 同 superstep 并发（端到端 3.04s vs 串行理论 5.00s），并打印边表供 PPT 截图",
     "StudyPath-AI/rag/app.py": "命令行交互 demo（单 agent）",
     "StudyPath-AI/rag/app_multi.py": "命令行交互 demo（多智能体）",
     "StudyPath-AI/rag/app_gradio.py": "★ 学术驾驶舱网页版（1012 行）：Gradio UI + 自研 CSS/JS 背景层，演示主入口 localhost:7860",
@@ -120,12 +122,13 @@ A = {
     "StudyPath-AI/docs/StudyPath_微调模块骨架设计.md": "微调模块骨架设计：对齐课上企业级微调范式，含完整目录树与各文件实现要点",
     "StudyPath-AI/docs/StudyPath_手机复习速览.md": "手机复习速览：答辩前碎片时间速记版，单页浓缩架构/关键口径/数字",
     "StudyPath-AI/docs/review-site/index.html": "手机复习速览的网页版（单文件 HTML，手机浏览器直接打开）",
-    "StudyPath-AI/docs/全流程架构图.svg": "全流程架构图（已按代码事实校正：Chroma 而非 pgvector、串行链而非并行、3 worker）",
+    "StudyPath-AI/docs/全流程架构图.svg": "全流程架构图（已按代码事实校正：Chroma 而非 pgvector、并行 fan-out/fan-in、3 worker）",
     "StudyPath-AI/docs/完整目录树.html": "◀ 本文件。由脚本真实扫描磁盘生成（非手写清单），逐文件标注",
     "StudyPath-AI/docs/完整目录树.md": "◀ 本文件的 Markdown 版本，便于 grep / 终端查看",
 
     # ===== 脚本 scripts/ =====
     "StudyPath-AI/scripts/build_pptx.py": "★ PPT 生成器（1293 行）：把答辩内容逐页导出为 23 页 .pptx（三档底色 + 含图页配「这张图证明了什么」标注条）",
+    "StudyPath-AI/scripts/gen_topology_png.py": "生成并行版 LangGraph 拓扑 PNG（matplotlib 手绘 fan-out/fan-in），输出到答辩 PPT 素材目录，覆盖前自动备份旧图",
     "StudyPath-AI/scripts/gen_pptx_preview.py": "◀ 版式预览器：把 .pptx 逐形状还原成 HTML（坐标/字号/颜色，图片 base64 内嵌），--only N 导出单页供 headless 截图核对。本机无 PowerPoint，这是验收版式的标准手法",
     "StudyPath-AI/scripts/启动驾驶舱.ps1": "启动脚本：清理 7860 端口 → 启动 app_gradio.py。路径全部基于脚本位置推导，可换机器",
     "StudyPath-AI/scripts/gen_tree_doc.py": "◀ 本目录树的生成器。真实扫描磁盘 + 逐文件标注字典 + 两道断言（漏标注/漏渲染即中止输出），产出 docs/完整目录树.{html,md}",

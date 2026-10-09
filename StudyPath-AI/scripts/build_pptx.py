@@ -14,6 +14,7 @@ from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.lang import MSO_LANGUAGE_ID
 from PIL import Image
 
 ROOT = Path(r"F:\留学项目\StudyPath-AI")
@@ -336,11 +337,11 @@ for no, head, hc, body, cons in pains:
              cons, font_size=9.5, bold=True, color=AMBER)
     x = x + pain_w + pain_gap
 
-add_rect(s, M, Inches(6.12), CW, Inches(0.66), fill=CARD_BG2, line_rgb=OKLINE)
-add_text(s, M + Inches(0.26), Inches(6.24), CW - Inches(0.52), Inches(0.46),
-         "本项目要解决的不是「能不能生成一段话」，而是「这段话里的每个事实能不能被追溯到原始出处」"
-         "—— 这决定了技术路线必须是检索增强，而不是单纯调用大模型。",
-         font_size=11.5, bold=True, color=NAVY)
+add_rect(s, M, Inches(6.06), CW, Inches(0.74), fill=CARD_BG2, line_rgb=OKLINE)
+add_text(s, M + Inches(0.26), Inches(6.13), CW - Inches(0.52), Inches(0.6), [
+    "三个特点指向同一个技术选择：把事实从模型参数里拿出来，放进可检索、可更新、可追溯的知识库。",
+    "分散的信息要归一，过期的信息要能低成本更新，每条事实要能点开出处 —— 单纯调用大模型一件都做不到。",
+], font_size=11.5, bold=True, color=NAVY, line_spacing=1.15)
 
 
 # ----- 03 项目目标与范围 -----
@@ -383,14 +384,16 @@ add_text(s, M + Inches(0.26), Inches(5.18), CW - Inches(0.52), Inches(0.3),
          "范围与边界（先说清楚，避免超出实际能力）", font_size=11.5, bold=True, color=AMBER)
 bounds = [
     "知识库覆盖 180 条真实记录（100 院校 + 50 录取案例 + 30 文书，以美 / 英 / 港 / 新为主），不是全量院校库。",
-    "院校数据为离线采集快照，未做实时增量抓取；数据更新需重跑采集与向量化流程。",
-    "多轮对话：已用 LangGraph checkpointer + 入口查询改写实现指代消解（内存级，进程重启即清空），不做长期用户记忆。",
+    "院校数据为离线采集快照，实时增量抓取未做；但事实不进模型参数，更新重跑采集与向量化即可，"
+    "代价是分钟级，不必重训模型。",
+    "多轮对话：会话内指代消解已实现（checkpointer + 入口查询改写）；跨会话长期记忆为有意不启用 —— "
+    "单次规划型任务用不上，画像含 GPA、预算等敏感信息，不落库更稳妥。",
 ]
 by = Inches(5.52)
 for b in bounds:
-    add_text(s, M + Inches(0.26), by, CW - Inches(0.52), Inches(0.36),
-             "· " + b, font_size=10, color=T_BODY)
-    by = by + Inches(0.38)
+    add_text(s, M + Inches(0.26), by, CW - Inches(0.52), Inches(0.38),
+             "· " + b, font_size=9.5, color=T_BODY, line_spacing=1.15)
+    by = by + Inches(0.4)
 
 
 # ----- 04 系统总体架构 + 技术选型逻辑 -----
@@ -433,7 +436,7 @@ pairs = [
     ("事实不可信、无法溯源", "RAG + Chroma + source_url", "事实由检索层注入，可逐条反查"),
     ("单次检索内容同质", "MMR（k=8 / fetch_k=20）", "兼顾相关性与多样性"),
     ("单个 Prompt 承担不了多任务", "LangGraph supervisor-worker", "三库分检索 + 三角色分 Prompt"),
-    ("输出语体不像留学顾问", "LoRA 领域微调", "权重层习得结构化与附来源范式"),
+    ("输出语体不像留学顾问", "LoRA 领域微调", "权重层习得结构化输出与附来源习惯"),
     ("人工搬运问答结果", "N8N 自动化工作流", "表单到推送端到端闭环"),
 ]
 py = Inches(2.06)
@@ -464,8 +467,8 @@ add_pill(s, M + Inches(5.2), Inches(5.0), "规则抽取 · 非模型打分", siz
 
 steps = [
     ("① 直接给 4.0 制", '"GPA 3.5" → gpa = 3.5'),
-    ("② 百分制换算", "90+→3.7 · 85+→3.3 · 80+→3.0"),
-    ("③ 本科档次估算", "C9→3.7 · 985/211→3.5 · 一本→3.2"),
+    ("② 百分制换算", "90+→3.7 · 85+→3.3\n80+→3.0 · 75+→2.7"),
+    ("③ 本科档次估算", "C9→3.7 · 985/211→3.5\n一本→3.2 · 双非→3.0"),
     ("④ 无任何信号", "保持 None，不计 0、不猜测"),
 ]
 gw = Inches(2.8675)
@@ -481,7 +484,7 @@ for head, body in steps:
 
 add_evidence(s, M, Inches(6.02), CW, [
     ("自然语言直入，无表单",
-     "顶部一句话直接点 Analyze，抽取是链路上游自动完成的一步。用户全程没有表单可填，也没被要求先补字段。"),
+     "顶部一句话直接点 Analyze，画像抽取与检索在同一次点击里并行完成。用户全程没有表单可填，也没被要求先补字段。"),
     ("GPA 3.3 是换算来的，不是「读」出来的",
      "截图里 3.3 带橙色「估算」角标，与②层「均分 85+ → 3.3」逐字吻合；代码打 gpa_is_estimated 标记，把换算值与用户直接给的分数分开。"),
     ("没信息的地方不硬编",
@@ -534,7 +537,7 @@ add_text(s, M + Inches(0.24), Inches(4.62), CW - Inches(0.48), Inches(0.85),
 
 add_rect(s, M, Inches(5.72), CW, Inches(1.0), fill=OKBG, line_rgb=OKLINE)
 add_text(s, M + Inches(0.24), Inches(5.84), CW - Inches(0.48), Inches(0.76),
-         "数据铁律：180 条全部来自院校官网、QS / USNews 等公开渠道的真实内容，每条带 source_url，"
+         "数据铁律：180 条全部来自院校官网、QS / USNews、公开案例页与留学论坛的真实内容，每条带 source_url，"
          "不混入样本数据、不虚构字段。\n"
          "source_url 不是装饰字段 —— 检索结果的来源卡片直接由它渲染，点开即可回到原始页面复核。",
          font_size=10.5, color=NAVY, line_spacing=1.3)
@@ -653,9 +656,9 @@ add_title(s, "RAG 实现链路", "从官方数据到带来源的答案，每一�
 add_footer(s, 9)
 
 steps = [
-    ("01", "官方数据采集", "院校官网 / QS / USNews / 公开案例页"),
-    ("02", "DocumentLoader", "统一读成 LangChain Document 对象"),
-    ("03", "清洗与标签归一化", "自由文本 → 5 个标签维度"),
+    ("01", "官方数据采集", "院校官网 / QS / USNews / 公开案例页与论坛"),
+    ("02", "清洗与标签归一化", "多源原始页 → 统一字段表（按库定义 schema）"),
+    ("03", "DocumentLoader", "字段拼成自然语言文本 + 关键字段存 metadata"),
     ("04", "Splitter（预留兜底）", "RecursiveCharacterTextSplitter 800 / 80"),
     ("05", "向量化", "text-embedding-v3 · 1024 维"),
     ("06", "向量库持久化", "Chroma 本地存储 · 180 条向量"),
@@ -676,10 +679,10 @@ for i, (no, head, body) in enumerate(steps):
              body, font_size=8.5, color=T_BODY, line_spacing=1.15)
 
 params = [
-    ("嵌入模型", "text-embedding-v3", "1024 维 · DashScope OpenAI 兼容端点"),
+    ("嵌入模型", "text-embedding-v3", "1024 维 · DashScope 原生 SDK"),
     ("向量库", "Chroma（本地）", "180 条向量 · 持久化到磁盘"),
     ("检索策略", "MMR", "k=8 / fetch_k=20"),
-    ("分库过滤", "3 个库分别检索", "按 source_lib 过滤，不混检"),
+    ("分库过滤", "3 个库分别检索", "按 source_sheet 过滤，不混检"),
 ]
 pw = Inches(2.845)
 for i, (label, val, note) in enumerate(params):
@@ -769,7 +772,7 @@ for head, body in reasons:
     ry = ry + Inches(0.8)
 
 add_image_fit(s, ASSETS / "langgraph_topology.png", M, Inches(4.14), Inches(11.0), Inches(2.5),
-              caption="上图由 build_graph().get_graph() 直接导出：5 个节点 / 6 条边 / 全部 conditional == False",
+              caption="拓扑按 build_graph() 的真实边表绘制：7 个节点 / 8 条边 / 三个 worker 并行 fan-out，同一 superstep 并发执行（边表可由 get_graph() 打印逐条核对）",
               cap_size=9.5)
 
 
@@ -803,7 +806,7 @@ add_text(s, M + Inches(0.02), Inches(4.22), Inches(6.4), Inches(0.28),
 
 rx = M + Inches(6.5)
 add_text(s, rx, Inches(1.66), Inches(5.4), Inches(0.3),
-         "# 组装与编译：5 个节点 + 6 条直连边", font_size=10, color=D_CMT, font=MONO)
+         "# 组装与编译：5 个业务节点 + 8 条直连边（并行 fan-out）", font_size=10, color=D_CMT, font=MONO)
 right_code = [
     {"text": "def build_graph():", "color": D_ACC},
     {"text": "    g = StateGraph(State)", "color": D_BODY},
@@ -814,23 +817,27 @@ right_code = [
     {"text": "    g.add_node(\"synthesizer\", synthesizer)", "color": D_BODY},
     {"text": "", "color": D_BODY},
     {"text": "    g.add_edge(START, \"supervisor\")", "color": D_STR},
+    {"text": "    # 并行 fan-out：同一 superstep 并发执行", "color": D_CMT},
     {"text": "    g.add_edge(\"supervisor\", \"worker_school\")", "color": D_STR},
-    {"text": "    g.add_edge(\"worker_school\", \"worker_admission\")", "color": D_STR},
-    {"text": "    g.add_edge(\"worker_admission\", \"worker_essay\")", "color": D_STR},
+    {"text": "    g.add_edge(\"supervisor\", \"worker_admission\")", "color": D_STR},
+    {"text": "    g.add_edge(\"supervisor\", \"worker_essay\")", "color": D_STR},
+    {"text": "    # fan-in：全部完成后才进 synthesizer", "color": D_CMT},
+    {"text": "    g.add_edge(\"worker_school\", \"synthesizer\")", "color": D_STR},
+    {"text": "    g.add_edge(\"worker_admission\", \"synthesizer\")", "color": D_STR},
     {"text": "    g.add_edge(\"worker_essay\", \"synthesizer\")", "color": D_STR},
     {"text": "    g.add_edge(\"synthesizer\", END)", "color": D_STR},
     {"text": "", "color": D_BODY},
     {"text": "    return g.compile(checkpointer=MemorySaver())", "color": D_KEY},
 ]
 add_text(s, rx, Inches(2.02), Inches(5.4), Inches(3.2), right_code,
-         font_size=10, color=D_BODY, font=MONO, line_spacing=1.32)
+         font_size=9.5, color=D_BODY, font=MONO, line_spacing=1.22)
 
 add_rect(s, rx + Inches(0.0), Inches(5.5), Inches(5.39), Inches(1.3),
          fill=D_CARD, line_rgb=D_LINE)
 add_text(s, rx + Inches(0.18), Inches(5.6), Inches(5.05), Inches(1.1),
          [{"text": "两个容易被追问的点", "color": D_ACC, "size": 10.5, "bold": True},
-          {"text": "① 6 条边全部是 add_edge 直连，conditional == False，没有条件边、没有子图。", "color": D_BODY, "size": 9},
-          {"text": "② worker 靠开头的 route 判断自己空转跳过，不是靠 conditional_edges 跳边。", "color": D_BODY, "size": 9}],
+          {"text": "① 并行无竞态：三个 worker 只写各自专属字段（school_* / admission_* / essay_*），无同 key 更新，故无需 reducer。", "color": D_BODY, "size": 9},
+          {"text": "② 路由裁剪：未被 supervisor 选中的 worker 返回 {}，并行与裁剪同时成立；8 条边全是 add_edge 直连，无 conditional_edges。", "color": D_BODY, "size": 9}],
          font_size=9, color=D_BODY, line_spacing=1.3)
 
 
@@ -955,7 +962,7 @@ add_text(s, M + Inches(0.24), Inches(5.54), CW - Inches(0.48), Inches(0.28),
          "为什么选 LoRA 而不是全参数微调", font_size=11, bold=True, color=NAVY)
 add_text(s, M + Inches(0.24), Inches(5.86), CW - Inches(0.48), Inches(0.72),
          "本机显存不足以承载 7B 的全参训练，而领域适配的目标只是「表达范式」而非「事实注入」，"
-         "用低秩适配即可达成：LoRA 仅更新 0.1% 量级的参数，基座权重冻结，训练在单卡 3090 上以分钟级完成。",
+         "用低秩适配即可达成：LoRA 只更新约 506 万个参数（不到基座的 0.1%），基座权重冻结，训练在单卡 3090 上以分钟级完成。",
          font_size=10, color=T_BODY, line_spacing=1.25)
 
 
@@ -1147,8 +1154,8 @@ add_title(s, "系统测试与结果", "所有指标均来自实际跑批产物�
 add_footer(s, 21)
 
 grid = [
-    ("引用命中率", "100%", "20/20 输出均带可溯源的引用", NAVY),
-    ("回答忠实度", "100%", "生成内容与检索证据逐句一致", NAVY),
+    ("引用命中率", "100%", "10/10 答案均含知识库真实 source_url", NAVY),
+    ("关键字段一致性", "100%", "抽样字段与检索证据吻合（3/3）", NAVY),
     ("平均 ROUGE-L", "0.5731", "20 条测试集均值", NAVY),
     ("对抗集 HitRate@8", "100%", "检索命中率，全部命中", TEAL),
     ("对抗集 MRR", "0.933", "命中结果排序质量（越接近 1 越好）", TEAL),
@@ -1198,7 +1205,7 @@ stages = [
         "180 条真实数据 + Chroma 向量库",
         "MMR 检索，答案附 source_url",
         "引用命中率提升到 100%",
-        "→ 事实可溯源问题解决",
+        "→ 事实可溯源，且更新不必重训模型",
     ]),
     ("V3", "多智能体 + 领域适配", TEAL, EVID_BG, EVID_LINE, [
         "LangGraph 三角色分工检索推理",
@@ -1250,7 +1257,7 @@ cols = [
         "事实层与表达层职责分离：RAG 管事实溯源，微调管语体结构",
         "双轨验证：引用命中 100% vs 微调 URL 逐字溯源 0/20",
         "180 条数据全部带 source_url，零虚构",
-        "五套技术栈贯通：LangChain / LangGraph / Chroma / Dify / N8N",
+        "五套技术栈贯通：LangChain / LangGraph / LoRA / Dify / N8N",
     ]),
     ("个人独立完成", ACCENT, CARD_BG2, ACCENT, [
         "数据采集与 5 维标注，构造 144 + 36 条 SFT 数据集",
@@ -1262,7 +1269,7 @@ cols = [
     ("后续工作", TEAL, EVID_BG, EVID_LINE, [
         "院校数据实时增量更新，替代当前离线快照",
         "扩充国家 / 地区覆盖，突破当前的美英港新范围",
-        "多轮上下文从内存级 checkpointer 升级为持久化存储",
+        "多轮上下文：如扩展到多用户 / 长期陪伴场景，接入持久化 checkpointer",
         "补充人工评测，用人工打分校验自动指标的可靠性",
     ]),
 ]
@@ -1286,6 +1293,16 @@ add_text(s, M + Inches(0.24), Inches(6.34), CW - Inches(0.48), Inches(0.44),
 
 
 # __SLIDES_INSERT_POINT__
+
+# 统一文本语言为简体中文。默认样式表里的 defRPr 写的是 en-US，而所有 run 都没有覆盖它，
+# 于是编辑器拿英文词典去检查中文，整段被判为拼写错误并画上红色波浪线。
+for _s in prs.slides:
+    for _sh in _s.shapes:
+        if not _sh.has_text_frame:
+            continue
+        for _p in _sh.text_frame.paragraphs:
+            for _run in _p.runs:
+                _run.font.language_id = MSO_LANGUAGE_ID.SIMPLIFIED_CHINESE
 
 prs.save(str(OUT))
 print("Saved: %s" % OUT)
