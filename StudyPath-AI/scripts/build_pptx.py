@@ -1233,10 +1233,11 @@ add_rect(s, M, Inches(4.94), CW, Inches(1.78), fill=WARNBG, line_rgb=WARNLINE)
 add_text(s, M + Inches(0.24), Inches(5.06), CW - Inches(0.48), Inches(0.28),
          "踩过的三个坑（也是这轮最实在的收获）", font_size=11.5, bold=True, color=AMBER)
 pit = [
-    "① PEFT 的原地注入：PeftModel.from_pretrained() 会直接改写传入的基座对象，循环里反复调用会污染「纯基座」对照组 —— "
-    "正解是只套一次 PeftModel，A 组用 with model.disable_adapter(): 隔离。",
+    "① 别名闭环：入库侧给院校加了别名，查询侧却忘了归一化，评测时 Imperial 这类裸简称直接匹配不上、掉出召回 —— "
+    "补 query_norm.py 做查询侧归一化后，对抗集 HitRate 从 93.3% 变成 100%。",
     "② 兼容端点不是万能的：OpenAI 兼容接口在中文批量 embedding 上返回 400，最终把嵌入改走 DashScope 原生 SDK，主链路仍保留兼容端点。",
-    "③ 忽略规则对已跟踪文件无效：.gitignore 改完必须 git rm --cached 才真正生效，且不能在改完规则后再跑 git reset。",
+    "③ 真跑过并发：三个 worker 并发打开同一个 Chroma 会报租户错误（Could not connect to tenant default_tenant）—— "
+    "改成模块级单例 + threading.Lock，锁只护首次构造，之后查询是只读。",
 ]
 py2 = Inches(5.4)
 for p in pit:
