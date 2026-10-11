@@ -1067,7 +1067,7 @@ add_text(s, M + Inches(0.24), Inches(1.74), CW - Inches(0.48), Inches(0.26),
          "实验条件（受控变量）", font_size=10.5, bold=True, color=NAVY)
 add_text(s, M + Inches(0.24), Inches(2.0), CW - Inches(0.48), Inches(0.44),
          "Prompt：你是一名留学文书顾问，请为申请纽约大学 MS Data Science 的学生写一段 SOP 开头，不超过 150 字。\n"
-         "解码 greedy（do_sample=False）｜唯一变量 = 是否挂载 LoRA adapter（20 MB）｜A 组通过 disable_adapter() 切回纯净基座",
+         "解码 greedy（do_sample=False）｜唯一变量 = 是否挂载 LoRA adapter（19.3 MB）｜A 组通过 disable_adapter() 切回纯净基座",
          font_size=9, color=T_BODY, line_spacing=1.25)
 
 A_CARD = RGBColor(0xF7, 0xF7, 0xFA)
@@ -1142,7 +1142,7 @@ for name, val, col, note in checks:
 
 add_rect(s, M, Inches(4.48), CW, Inches(1.06), fill=OKBG, line_rgb=OKLINE)
 add_text(s, M + Inches(0.24), Inches(4.58), CW - Inches(0.48), Inches(0.86),
-         "结论：参数高效微调（LoRA · rank8 · 180 条样本 · 3 epoch）习得的是【表达范式】—— 语体、结构、"
+         "结论：参数高效微调（LoRA · rank8 · 129 条训练样本 · 3 epoch）习得的是【表达范式】—— 语体、结构、"
          "主动标注来源的习惯；它不承担【事实记忆】。\n"
          "所以职责必须拆开：RAG 检索层负责事实与 source_url 溯源，微调层负责语体与结构生成 —— "
          "这不是把两个技术堆在一起，而是两条链路各自有明确的验收标准。",

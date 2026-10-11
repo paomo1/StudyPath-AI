@@ -71,8 +71,8 @@
 - 目标：让基座学会留学顾问的**表达范式**（文书语体、结构化输出、主动标注来源的习惯）。
 - 方案：LoRA rank=8 / alpha=16 / target=q,k,v,o_proj，学习率 2e-4，3 个 epoch，batch=1 × grad_accum=8，bf16 + FlashAttention2。
 - 数据：由 `annotations/build_sft_data.py` 从《院校数据采集.xlsx》三库构造 180 条 SFT（train 144 / eval 36）；训练时按 `val_size=0.1` 切分为 **129 训练 + 15 验证监控**。
-- 环境：AutoDL RTX 3090 单卡 24GB，纯训练 **106.83 秒**（51 steps），train_loss 1.2952 → eval_loss 0.7597，收敛未过拟合。
-- 产物：`model/lora/adapter_model.safetensors`（约 20MB）+ 两张 loss 曲线。
+- 环境：AutoDL RTX 3090 单卡 24GB，纯训练 **106.83 秒**（51 steps），train_loss 1.2952 → eval_loss 0.7597，loss 同步下降、训练跑通。
+- 产物：`model/lora/adapter_model.safetensors`（约 19.3 MB）+ 两张 loss 曲线。
 - **A/B 对照取证**（`finetune/ab_compare.py`）：同 prompt、同基座、greedy 解码，唯一变量是是否挂载 adapter —— 3/3 组业务任务输出发生行为改变，文书类从泛化陈述句转为第一人称文书语体。
 - **客观评估**（`finetune/evaluate.py`）：20 条自动评估，指令遵循率 **100.0%**，平均 ROUGE-L **0.5731**。
 - **能力边界核查**（`finetune/fact_audit.py`）：生成文本的来源 URL 对知识库真实 URL 白名单溯源命中率 **0/20**、排名数字一致率 **0/7** → 微调习得的是表达范式而非事实记忆，事实与溯源由 RAG 层负责。
@@ -130,7 +130,7 @@
 | 指标 | 数值 | 说明 |
 |------|------|------|
 | 训练步数 / 纯训练耗时 | 51 steps / 106.83s | AutoDL RTX 3090 单卡，bf16 + FlashAttention2 |
-| train_loss → eval_loss | 1.2952 → 0.7597 | 收敛未过拟合 |
+| train_loss → eval_loss | 1.2952 → 0.7597 | loss 同步下降、训练跑通 |
 | 指令遵循率 / 平均 ROUGE-L | 100.0% / 0.5731 | 20 条自动评估 |
 | A/B 对照 | 3 / 3 组行为改变 | `identical = false`，唯一变量 = 是否挂载 LoRA |
 | 事实层可溯源率 | 0/20（URL）· 0/7（排名） | 微调不承担事实记忆 —— 双轨架构的实证依据 |

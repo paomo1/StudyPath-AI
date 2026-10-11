@@ -69,7 +69,7 @@ bash finetune/autodl_train.sh
 | 指标 | 值 |
 |---|---|
 | train_loss | **1.2952** |
-| eval_loss | **0.7597**（低于 train_loss，收敛未过拟合） |
+| eval_loss | **0.7597**（低于 train_loss，loss 同步下降、训练跑通） |
 | global_step | **51**（3 epoch × 17 步；129 训练样本 ÷ (bs1×ga8) = 17 步/epoch） |
 | train_runtime | **106.83 秒**（纯训练，不含环境准备） |
 | 训练集 / 验证集 | 129 / 15（由 144 条 `train.jsonl` 按 val_size=0.1 切分） |

@@ -327,7 +327,7 @@ def main():
     canon = eval_split(cases, lambda d: d.metadata.get("source_url"))
     advm = eval_split(adv, lambda d: d.metadata.get("source_url"))
 
-    # 生成忠实度：对所有有 gt_url 的 case 抽 10 条测「引用 url 命中」；
+    # 引用命中率（生成侧）：对所有有 gt_url 的 case 抽 10 条测「引用 url 命中」；
     # 其中 gpa/lang 子类额外测「关键数值字段命中」（问学费/排名时本不该出现语言分）。
     faith_pool = [c for c in (cases + adv) if c.get("gt_url")]
     random.seed(7)
@@ -393,7 +393,7 @@ def main():
             print(f"    HitRate@{k:<2}: {advm['hit_rate'][f'hit_rate@{k}']:.1%}")
         print(f"    MRR: {advm['mrr']:.4f}   Recall@8: {advm['recall@8']:.1%}")
 
-    print(f"\n[C] 生成忠实度（抽 {faith['n']} 条真生成）")
+    print(f"\n[C] 引用命中率（抽 {faith['n']} 条真生成）")
     print(f"    引用正确 source_url 命中: {faith['citation_url_hit']:.1%}")
     print(f"    关键数值字段命中      : {faith['key_field_hit']:.1%}")
 
