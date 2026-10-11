@@ -361,7 +361,7 @@ add_text(s, M + Inches(0.26), Inches(1.85), CW - Inches(0.52), Inches(0.8),
          font_size=12.5, color=NAVY, bold=True, line_spacing=1.3)
 
 add_text(s, M, Inches(2.96), Inches(6), Inches(0.3),
-         "能力构成（产品能力与支撑技术分列，避免把手段当成并列功能）", font_size=12, bold=True, color=T_TITLE)
+         "能力构成（产品能力 / 支撑技术）", font_size=12, bold=True, color=T_TITLE)
 
 cap_groups = [
     ("产品能力 · 用户可感知", ACCENT, M, [
@@ -811,7 +811,7 @@ left_code = [
 add_text(s, M, Inches(2.02), Inches(7), Inches(2.6), left_code,
          font_size=10, color=D_BODY, font=MONO, line_spacing=1.32)
 
-add_text(s, M + Inches(0.02), Inches(4.22), Inches(6.4), Inches(0.28),
+add_text(s, M + Inches(0.02), Inches(4.82), Inches(6.4), Inches(0.28),
          "# 路由不靠条件边：worker 自己判断是否在 route 里，不在则返回 {}", font_size=9, color=D_CMT, font=MONO)
 
 rx = M + Inches(6.5)
@@ -1021,7 +1021,7 @@ mets = [
     ("损失下降", "1.2952 → 0.7597", "train_loss → eval_loss", NAVY),
     ("训练步数", "51 steps", "3 个 epoch · batch1 × accum8", NAVY),
     ("纯训练耗时", "106.8 秒", "单卡 RTX 3090 · bf16", TEAL),
-    ("Adapter 体积", "20.2 MB", "基座权重冻结 · 仅存适配层", TEAL),
+    ("Adapter 体积", "19.3 MB", "adapter_model.safetensors · 基座冻结", TEAL),
 ]
 for i, (label, val, note, vc) in enumerate(mets):
     add_metric(s, M + (mw + Inches(0.17)) * i, Inches(1.78), mw, Inches(1.24),
@@ -1050,7 +1050,7 @@ add_rect(s, M + Inches(6.04), Inches(4.82), Inches(5.85), Inches(1.9),
 add_text(s, M + Inches(6.26), Inches(4.94), Inches(5.45), Inches(0.28),
          "为什么不把 loss 当成果指标", font_size=11.5, bold=True, color=AMBER)
 add_text(s, M + Inches(6.26), Inches(5.26), Inches(5.45), Inches(1.34),
-         "180 条样本、3 个 epoch 的 loss 曲线本身不构成任何结论 —— 它只能证明训练跑通了。\n"
+         "129 条训练样本、3 个 epoch 的 loss 曲线本身不构成任何结论 —— 它只能证明训练跑通了。\n"
          "真正需要回答的问题是：微调之后，模型的输出行为到底变了什么、能不能稳定复现、"
          "有没有超出它该承担的范围。这三问由 A/B 对照与能力边界核查来回答。",
          font_size=9.5, color=T_BODY, line_spacing=1.28)
@@ -1164,11 +1164,11 @@ add_title(s, "系统测试与结果", "所有指标均来自实际跑批产物�
 add_footer(s, 21)
 
 grid = [
-    ("对抗集 HitRate@8", "100%", "检索命中率，全部命中", TEAL, "检索侧"),
+    ("对抗集 HitRate@8", "100%", "口语化 / 别名问法，全部命中", TEAL, "检索侧"),
     ("对抗集 MRR", "0.933", "命中结果排序质量（越接近 1 越好）", TEAL, "检索侧"),
+    ("常规集 HitRate@1", "100%", "50 题标准表述，首条即命中", TEAL, "检索侧"),
     ("引用命中率", "100%", "10/10 答案均含知识库真实 source_url", NAVY, "生成侧"),
     ("关键字段一致性", "100%", "抽样字段与检索证据吻合（3/3）", NAVY, "生成侧"),
-    ("平均 ROUGE-L", "0.5731", "20 条测试集均值", NAVY, "生成侧"),
     ("编排并行收益", "2.98x", "三 worker 段 sum → max，同条件 A/B 实测", ACCENT, "编排侧"),
 ]
 gw = Inches(3.83)
@@ -1193,8 +1193,8 @@ add_rect(s, M + Inches(6.04), Inches(4.8), Inches(5.85), Inches(1.9),
 add_text(s, M + Inches(6.26), Inches(4.92), Inches(5.45), Inches(0.28),
          "指标怎么测的", font_size=11, bold=True, color=NAVY)
 add_text(s, M + Inches(6.26), Inches(5.24), Inches(5.45), Inches(1.34),
-         "检索侧：自建对抗集，把问题与两段内容相近但来源不同的文档配对，检验能否命中正确那一条。\n"
-         "生成侧：ROUGE-L 基于 20 条测试集；引用命中率以输出里出现知识库真实 URL 为准。\n"
+         "检索侧：规范集 50 题 + 自建对抗集，把问题与两段内容相近但来源不同的文档配对，检验能否命中正确那一条。\n"
+         "生成侧：真实性核验集 10 条，看输出是否命中知识库真实 URL、关键字段与检索证据是否一致。\n"
          "编排侧：同进程内并行图 / 串行图跑同一条 query 对照，取三个 worker 段的耗时之比。",
          font_size=9, color=T_BODY, line_spacing=1.25)
 
@@ -1215,7 +1215,7 @@ stages = [
     ("V2", "引入 RAG 检索", ACCENT, CARD_BG2, ACCENT, [
         "180 条真实数据 + Chroma 向量库",
         "MMR 检索，答案附 source_url",
-        "引用命中率提升到 100%",
+        "引用命中率 100%",
         "→ 事实可溯源，且更新不必重训模型",
     ]),
     ("V3", "多智能体 + 领域适配", TEAL, EVID_BG, EVID_LINE, [
