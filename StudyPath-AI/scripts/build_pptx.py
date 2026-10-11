@@ -248,10 +248,14 @@ def add_evidence(slide, left, top, width, items, height=Inches(1.02)):
         x = x + cw + gap
 
 
-def add_metric(slide, left, top, width, height, label, value, note, value_color=NAVY):
+def add_metric(slide, left, top, width, height, label, value, note, value_color=NAVY,
+               tag=None, tag_color=ACCENT):
     add_rect(slide, left, top, width, height, fill=CARD_BG, line_rgb=CARD_LINE)
     add_text(slide, left + Inches(0.16), top + Inches(0.06), width - Inches(0.32), Inches(0.24),
              label, font_size=9.5, bold=True, color=T_MUTED)
+    if tag:
+        add_pill(slide, left + width - Inches(0.88), top + Inches(0.05), tag,
+                 fill=tag_color, fg=T_WHITE, size=8, width=Inches(0.74), height=Inches(0.22))
     add_text(slide, left + Inches(0.16), top + Inches(0.27), width - Inches(0.32), Inches(0.34),
              value, font_size=16, bold=True, color=value_color)
     add_text(slide, left + Inches(0.16), top + Inches(0.6), width - Inches(0.32), Inches(0.22),
@@ -284,7 +288,7 @@ add_text(s, M + Inches(0.26), Inches(4.24), CW - Inches(0.52), Inches(0.3),
          "项目定位", font_size=12, bold=True, color=NAVY)
 add_text(s, M + Inches(0.26), Inches(4.58), CW - Inches(0.52), Inches(0.72),
          "面向留学申请场景的规划助手：以 180 条真实可溯源数据为底座，用检索增强保证事实可信，"
-         "用多智能体把复杂问题拆给三个领域角色分别处理再汇总，覆盖「选校 → 背景评估 → 文书 → 自动化推送」全流程。",
+         "用多智能体把复杂问题拆给三个领域角色分别处理再汇总，覆盖「选校定稿 → 材料准备 → 文书写作 → 网申提交 → 面试准备」的完整申请规划，并可由工作流推送到协作场景。",
          font_size=12, color=T_BODY)
 
 pills = ["RAG 检索增强", "多智能体协作", "LoRA 领域微调", "Dify 低代码应用", "N8N 自动化编排"]
@@ -294,7 +298,7 @@ for t in pills:
     x = x + w + Inches(0.16)
 
 add_text(s, M, Inches(6.5), CW, Inches(0.3),
-         "数据来源全部可溯源 · 每条记录带 source_url · 零编造", font_size=11, color=TEAL)
+         "端到端可运行 · 事实可核对 · 五套技术栈贯通", font_size=11, color=TEAL)
 
 
 # ----- 02 背景与痛点 -----
@@ -347,7 +351,7 @@ add_text(s, M + Inches(0.26), Inches(6.13), CW - Inches(0.52), Inches(0.6), [
 # ----- 03 项目目标与范围 -----
 s = prs.slides.add_slide(blank)
 set_bg(s, PAGE_NORMAL)
-add_title(s, "项目目标与范围", "一句话定位 · 五项能力 · 三条边界")
+add_title(s, "项目目标与范围", "一句话定位 · 两类能力 · 三条边界")
 add_footer(s, 3)
 
 add_rect(s, M, Inches(1.72), CW, Inches(1.02), fill=CARD_BG2, line_rgb=ACCENT)
@@ -357,33 +361,40 @@ add_text(s, M + Inches(0.26), Inches(1.85), CW - Inches(0.52), Inches(0.8),
          font_size=12.5, color=NAVY, bold=True, line_spacing=1.3)
 
 add_text(s, M, Inches(2.96), Inches(6), Inches(0.3),
-         "五项核心能力", font_size=12, bold=True, color=T_TITLE)
+         "能力构成（产品能力与支撑技术分列，避免把手段当成并列功能）", font_size=12, bold=True, color=T_TITLE)
 
-caps = [
-    ("Profile 抽取", "从自然语言里结构化提取 GPA / 标化 / 目标院校 / 科研背景"),
-    ("方案匹配", "按画像给出选校清单与冲刺-稳妥-保底风险分档"),
-    ("RAG 可信检索", "180 条真实数据 · MMR 检索 · 输出逐条带 source_url"),
-    ("多智能体协作", "LangGraph 三角色专家分库检索，汇总为五阶段规划"),
-    ("自动化闭环", "N8N 把「表单提问 → AI 回答 → 飞书推送」串成闭环"),
+cap_groups = [
+    ("产品能力 · 用户可感知", ACCENT, M, [
+        ("Profile 抽取", "自然语言 → 结构化画像"),
+        ("方案匹配", "选校清单 + 冲 / 稳 / 保 分档"),
+        ("规划输出", "五阶段可执行申请规划"),
+    ]),
+    ("支撑技术 · 实现手段", NAVY, M + Inches(6.04), [
+        ("RAG 可信检索", "180 条 · MMR · 带 source_url"),
+        ("多智能体协作", "三角色分库检索后汇总"),
+        ("LoRA 领域适配", "统一语体与结构化输出"),
+        ("N8N 自动化", "表单 → AI → 飞书推送"),
+    ]),
 ]
-cap_w = Inches(2.28)
-cap_gap = Inches(0.185)
-x = M
-for i, (head, body) in enumerate(caps):
-    add_rect(s, x, Inches(3.32), cap_w, Inches(1.5), fill=CARD_BG, line_rgb=CARD_LINE)
-    add_text(s, x + Inches(0.16), Inches(3.44), cap_w - Inches(0.32), Inches(0.28),
-             "0%d" % (i + 1), font_size=10, bold=True, color=ACCENT)
-    add_text(s, x + Inches(0.16), Inches(3.72), cap_w - Inches(0.32), Inches(0.3),
-             head, font_size=11.5, bold=True, color=NAVY)
-    add_text(s, x + Inches(0.16), Inches(4.06), cap_w - Inches(0.32), Inches(0.7),
-             body, font_size=9, color=T_BODY, line_spacing=1.2)
-    x = x + cap_w + cap_gap
+gcap_w = Inches(5.85)
+for head, hc, gx, items in cap_groups:
+    add_rect(s, gx, Inches(3.32), gcap_w, Inches(1.5), fill=CARD_BG, line_rgb=CARD_LINE)
+    add_bar(s, gx, Inches(3.32), gcap_w, Inches(0.05), hc)
+    add_text(s, gx + Inches(0.2), Inches(3.44), gcap_w - Inches(0.4), Inches(0.26),
+             head, font_size=10.5, bold=True, color=hc)
+    iy = Inches(3.74)
+    for j, (h, b) in enumerate(items):
+        add_text(s, gx + Inches(0.2), iy, Inches(2.1), Inches(0.24),
+                 "0%d  %s" % (j + 1, h), font_size=8.5, bold=True, color=NAVY)
+        add_text(s, gx + Inches(2.3), iy, gcap_w - Inches(2.5), Inches(0.24),
+                 b, font_size=8.5, color=T_BODY)
+        iy = iy + Inches(0.25)
 
 add_rect(s, M, Inches(5.06), CW, Inches(1.72), fill=WARNBG, line_rgb=WARNLINE)
 add_text(s, M + Inches(0.26), Inches(5.18), CW - Inches(0.52), Inches(0.3),
          "范围与边界（先说清楚，避免超出实际能力）", font_size=11.5, bold=True, color=AMBER)
 bounds = [
-    "知识库覆盖 180 条真实记录（100 院校 + 50 录取案例 + 30 文书，以美 / 英 / 港 / 新为主），不是全量院校库。",
+    "知识库覆盖 180 条真实记录（100 院校 + 50 录取案例 + 30 文书，以美国为主、覆盖英加澳港新等 10 个国家 / 地区），不是全量院校库。",
     "院校数据为离线采集快照，实时增量抓取未做；但事实不进模型参数，更新重跑采集与向量化即可，"
     "代价是分钟级，不必重训模型。",
     "多轮对话：会话内指代消解已实现（checkpointer + 入口查询改写）；跨会话长期记忆为有意不启用 —— "
@@ -412,10 +423,10 @@ add_text(s, M + Inches(0.2), Inches(2.04), arch_w - Inches(0.4), Inches(0.3),
          font_size=9.5, color=T_BODY)
 
 layers = [
+    ("模型适配层", "Qwen2.5-7B-Instruct + LoRA 领域微调（rank8 / alpha16 / 3 epoch）"),
     ("检索与推理层", "LangChain（Loader / Embeddings / VectorStore）+ Chroma 向量库 + MMR 检索；LangGraph supervisor-worker 多智能体编排"),
     ("交互层", "Gradio 本地驾驶舱（localhost:7860，多轮对话 + 来源卡片）／Dify Chatflow 线上应用"),
     ("自动化层", "N8N 工作流：表单触发 → 调 Dify API → 飞书群推送，端到端无人值守"),
-    ("模型适配层", "Qwen2.5-7B-Instruct + LoRA 领域微调（rank8 / alpha16 / 3 epoch）"),
 ]
 ly = Inches(2.56)
 for i, (head, body) in enumerate(layers):
@@ -454,7 +465,7 @@ for q, tech, why in pairs:
 # ----- 05 用户输入理解：Profile 抽取 -----
 s = prs.slides.add_slide(blank)
 set_bg(s, PAGE_NORMAL)
-add_title(s, "用户输入理解：Profile 抽取", "把一段自然语言描述，转成结构化、可参与推理的画像字段")
+add_title(s, "用户输入理解：Profile 抽取", "把一段自然语言描述，转成结构化画像字段，实时驱动画像面板与完整度评估")
 add_footer(s, 5)
 
 # 真实运行截图：一句话输入 → Analyze → Profile Snapshot
@@ -516,7 +527,7 @@ libs = [
      "真实录取与拒录案例：申请人背景、申请结果、去向院校。"
      "用于校准「这个背景够不够」这类定位判断，而不是凭模型印象给结论。"),
     ("文书范例库 · 30 条",
-     "PS / SOP / 推荐信范例：结构拆解与写作要点。"
+     "SOP / PS / CV / 推荐信范例：结构拆解与写作要点。"
      "文书 worker 检索时命中，未命中会明确标注「未检索到同方向范文」。"),
 ]
 lw3 = Inches(3.83)
@@ -549,9 +560,9 @@ set_bg(s, PAGE_NORMAL)
 add_title(s, "标注体系与标签分布", "把自由文本归一化成 5 个可量化维度，作为后续数据构造的依据")
 add_footer(s, 7)
 
-top_charts = [("dist_申请结果.png", "申请结果 · Admit / Reject / Waitlist"),
-              ("dist_排名档.png", "排名档 · Top10 / Top30 / Top50 / 其他"),
-              ("dist_文书类型.png", "文书类型 · PS / SOP / 推荐信"),
+top_charts = [("dist_申请结果.png", "申请结果 · Admit 49 / Reject 1"),
+              ("dist_排名档.png", "排名档 · 冲 / 稳 / 保（另 25 条未评级）"),
+              ("dist_文书类型.png", "文书类型 · SOP / PS / CV / LOR"),
               ("dist_文书质量.png", "文书质量 · 优 / 良 / 中")]
 cw4 = Inches(2.82)
 cx = M
@@ -561,7 +572,7 @@ for fn, cap in top_charts:
     cx = cx + cw4 + Inches(0.2)
 
 add_image_fit(s, ASSETS / "dist_院校国家.png", M, Inches(3.86), cw4, Inches(1.9),
-              caption="院校国家 · 美 / 英 / 港 / 新 / 其他", cap_size=9)
+              caption="院校国家 · 美英加澳港新等 10 国", cap_size=9)
 
 add_rect(s, M + cw4 + Inches(0.2), Inches(3.86), CW - cw4 - Inches(0.2), Inches(1.9),
          fill=EVID_BG, line_rgb=EVID_LINE)
@@ -570,7 +581,7 @@ add_text(s, M + cw4 + Inches(0.44), Inches(3.98), CW - cw4 - Inches(0.68), Inche
 ev = [
     "① 每个维度都有实际分布、类别之间有区分度 —— 标签体系不是摆设，能支撑后续按维度筛选数据。",
     "② 文书质量与文书类型的分档，直接对应 SFT 数据构造时的类别标签，标注结果可被训练流程直接消费。",
-    "③ 院校国家以美 / 英 / 港 / 新为主 —— 与知识库实际覆盖范围一致，边界对用户是透明的。",
+    "③ 院校国家以美国为主（54 条），英 16 / 加 13 次之 —— 覆盖范围与知识库实际分布一致，边界对用户是透明的。",
 ]
 ey = Inches(4.34)
 for e in ev:
@@ -659,11 +670,10 @@ steps = [
     ("01", "官方数据采集", "院校官网 / QS / USNews / 公开案例页与论坛"),
     ("02", "清洗与标签归一化", "多源原始页 → 统一字段表（按库定义 schema）"),
     ("03", "DocumentLoader", "字段拼成自然语言文本 + 关键字段存 metadata"),
-    ("04", "Splitter（预留兜底）", "RecursiveCharacterTextSplitter 800 / 80"),
-    ("05", "向量化", "text-embedding-v3 · 1024 维"),
-    ("06", "向量库持久化", "Chroma 本地存储 · 180 条向量"),
-    ("07", "MMR 检索", "k=8 / fetch_k=20，兼顾相关性与多样性"),
-    ("08", "生成", "qwen-plus 基于召回资料作答，附 [资料N]"),
+    ("04", "向量化", "text-embedding-v3 · 1024 维"),
+    ("05", "向量库持久化", "Chroma 本地存储 · 180 条向量"),
+    ("06", "MMR 检索", "k=8 / fetch_k=20，兼顾相关性与多样性"),
+    ("07", "生成", "qwen-plus 基于召回资料作答，附 [资料N]"),
 ]
 sw = Inches(2.81)
 for i, (no, head, body) in enumerate(steps):
@@ -682,7 +692,7 @@ params = [
     ("嵌入模型", "text-embedding-v3", "1024 维 · DashScope 原生 SDK"),
     ("向量库", "Chroma（本地）", "180 条向量 · 持久化到磁盘"),
     ("检索策略", "MMR", "k=8 / fetch_k=20"),
-    ("分库过滤", "3 个库分别检索", "按 source_sheet 过滤，不混检"),
+    ("分库过滤", "3 个库分别检索", "按 source_sheet 过滤不混检（数据集 source_lib 字段映射而来）"),
 ]
 pw = Inches(2.845)
 for i, (label, val, note) in enumerate(params):
@@ -691,7 +701,7 @@ for i, (label, val, note) in enumerate(params):
 
 add_rect(s, M, Inches(5.44), Inches(5.85), Inches(1.28), fill=WARNBG, line_rgb=WARNLINE)
 add_text(s, M + Inches(0.2), Inches(5.54), Inches(5.45), Inches(0.26),
-         "关于 Splitter 的实际情况", font_size=10.5, bold=True, color=AMBER)
+         "旁注：Splitter 的实际情况（未进主链，仅预留兜底）", font_size=10.5, bold=True, color=AMBER)
 add_text(s, M + Inches(0.2), Inches(5.82), Inches(5.45), Inches(0.84),
          "build_vectorstore 里配置了 800 / 80 的切分器，但实测 180 条记录中最长文本为 530 字符、"
          "超 800 字符的为 0 条 —— 一条记录 = 一个 Document = 一条向量，切分器是预留兜底，未实际生效。",
@@ -859,7 +869,7 @@ add_evidence_v(s, M + Inches(7.5), Inches(1.72), Inches(4.39), [
 
 add_rect(s, M, Inches(5.84), CW, Inches(0.86), fill=CARD_BG2, line_rgb=ACCENT)
 add_text(s, M + Inches(0.24), Inches(5.95), CW - Inches(0.48), Inches(0.66),
-         "注意：图中第二轮的连续追问（「那第一个的截止日期和学费呢」）能正确落到上一轮推荐的院校 —— "
+         "图中第二轮的连续追问（「那第一个的截止日期和学费呢」）正确落到了上一轮推荐的院校 —— "
          "这依赖 LangGraph checkpointer 保存的跨轮 state 与入口处的查询改写，而不是靠模型猜上下文。",
          font_size=10.5, color=NAVY)
 
@@ -962,7 +972,7 @@ add_text(s, M + Inches(0.24), Inches(5.54), CW - Inches(0.48), Inches(0.28),
          "为什么选 LoRA 而不是全参数微调", font_size=11, bold=True, color=NAVY)
 add_text(s, M + Inches(0.24), Inches(5.86), CW - Inches(0.48), Inches(0.72),
          "本机显存不足以承载 7B 的全参训练，而领域适配的目标只是「表达范式」而非「事实注入」，"
-         "用低秩适配即可达成：LoRA 只更新约 506 万个参数（不到基座的 0.1%），基座权重冻结，训练在单卡 3090 上以分钟级完成。",
+         "用低秩适配即可达成：LoRA 只更新约 506 万个参数（占基座 0.066%），基座权重冻结，训练在单卡 3090 上以分钟级完成。",
          font_size=10, color=T_BODY, line_spacing=1.25)
 
 
@@ -995,8 +1005,8 @@ for k, v in cfg:
 
 add_rect(s, M, Inches(6.1), CW, Inches(0.62), fill=EVID_BG, line_rgb=EVID_LINE)
 add_text(s, M + Inches(0.24), Inches(6.2), CW - Inches(0.48), Inches(0.44),
-         "曲线说明：train_loss 与 eval_loss 同步下降且未见回弹上翘，3 个 epoch 内稳定收敛，"
-         "在 180 条小样本下没有出现明显过拟合。",
+         "曲线说明：train_loss 与 eval_loss 同步下降、未见回弹上翘，trainer 在 51 步内完成 3 个 epoch。"
+         "这条曲线只说明训练正常跑通；学得像不等于事实正确，由此得出的结论放在第 18–20 页核查。",
          font_size=10.5, bold=True, color=TEAL)
 
 
@@ -1031,8 +1041,7 @@ add_rect(s, M, Inches(4.82), Inches(5.85), Inches(1.9), fill=EVID_BG, line_rgb=E
 add_text(s, M + Inches(0.22), Inches(4.94), Inches(5.45), Inches(0.28),
          "结果解读", font_size=11.5, bold=True, color=TEAL)
 add_text(s, M + Inches(0.22), Inches(5.26), Inches(5.45), Inches(1.34),
-         "train_loss 与 eval_loss 同步下降、无回弹，说明模型确实在拟合这 180 条数据的表达模式，"
-         "而不是记住了随机噪声。\n"
+         "train_loss 与 eval_loss 同步下降、无回弹，说明优化过程正常，训练在设定步数内完成。\n"
          "但「loss 降了」只能说明它学得像训练集，学得像不等于事实正确 —— 这一点由后面两页的实验专门核查。",
          font_size=9.5, color=T_BODY, line_spacing=1.28)
 
@@ -1086,13 +1095,14 @@ add_text(s, M + Inches(6.26), Inches(3.04), Inches(5.41), Inches(1.5),
          "如今，我渴望在纽约大学继续深造，成为数据科学领域的顶尖人才。",
          font_size=10, color=RGBColor(0x2A, 0x4A, 0x3E), line_spacing=1.24)
 add_text(s, M + Inches(6.26), Inches(4.62), Inches(5.41), Inches(0.4),
-         "✓ 第一人称文书语体：锚定「自学 Python/R、主修数学统计」等具体背景事实，贴合 SOP 写作范式。",
+         "✓ 第一人称文书语体：由宏观议论转为分点陈述，语体与结构发生权重层迁移。"
+         "⚠ 其中「自学 Python/R、主修数学统计」是模型自行补全的，prompt 并未给出该背景 —— 见下页核查。",
          font_size=9, bold=True, color=TEAL)
 
 add_rect(s, M, Inches(5.26), CW, Inches(0.6), fill=OKBG, line_rgb=OKLINE)
 add_text(s, M + Inches(0.24), Inches(5.34), CW - Inches(0.48), Inches(0.44),
-         "结论：identical = False —— 只切换 LoRA 权重，输出即由「通用陈述式长句」转为「第一人称文书语体 + 个人背景事实」，"
-         "属权重层的行为改变，而不是 prompt 修饰出来的差异。",
+         "结论：identical = False —— 只切换 LoRA 权重，输出即由「通用陈述式长句」转为「第一人称分点陈述的文书语体」，"
+         "属权重层的表达迁移，而非 prompt 修饰出来的差异；段中个人背景系模型补全，其事实性由下页专门核查。",
          font_size=10, bold=True, color=TEAL)
 
 mets2 = [("指令遵循率", "100.0%", "20/20 条输出非空且 > 20 字"),
@@ -1154,19 +1164,20 @@ add_title(s, "系统测试与结果", "所有指标均来自实际跑批产物�
 add_footer(s, 21)
 
 grid = [
-    ("引用命中率", "100%", "10/10 答案均含知识库真实 source_url", NAVY),
-    ("关键字段一致性", "100%", "抽样字段与检索证据吻合（3/3）", NAVY),
-    ("平均 ROUGE-L", "0.5731", "20 条测试集均值", NAVY),
-    ("对抗集 HitRate@8", "100%", "检索命中率，全部命中", TEAL),
-    ("对抗集 MRR", "0.933", "命中结果排序质量（越接近 1 越好）", TEAL),
-    ("编排并行收益", "2.98x", "三 worker 段 sum → max，同条件 A/B 实测", TEAL),
+    ("对抗集 HitRate@8", "100%", "检索命中率，全部命中", TEAL, "检索侧"),
+    ("对抗集 MRR", "0.933", "命中结果排序质量（越接近 1 越好）", TEAL, "检索侧"),
+    ("引用命中率", "100%", "10/10 答案均含知识库真实 source_url", NAVY, "生成侧"),
+    ("关键字段一致性", "100%", "抽样字段与检索证据吻合（3/3）", NAVY, "生成侧"),
+    ("平均 ROUGE-L", "0.5731", "20 条测试集均值", NAVY, "生成侧"),
+    ("编排并行收益", "2.98x", "三 worker 段 sum → max，同条件 A/B 实测", ACCENT, "编排侧"),
 ]
 gw = Inches(3.83)
 gh = Inches(1.32)
-for i, (label, val, note, vc) in enumerate(grid):
+TAG_COLOR = {"检索侧": TEAL, "生成侧": NAVY, "编排侧": ACCENT}
+for i, (label, val, note, vc, tag) in enumerate(grid):
     row, col = divmod(i, 3)
     add_metric(s, M + (gw + Inches(0.2)) * col, Inches(1.76) + (gh + Inches(0.18)) * row,
-               gw, gh, label, val, note, value_color=vc)
+               gw, gh, label, val, note, value_color=vc, tag=tag, tag_color=TAG_COLOR[tag])
 
 add_rect(s, M, Inches(4.8), Inches(5.85), Inches(1.9), fill=WARNBG, line_rgb=WARNLINE)
 add_text(s, M + Inches(0.22), Inches(4.92), Inches(5.45), Inches(0.28),
@@ -1234,7 +1245,7 @@ add_text(s, M + Inches(0.24), Inches(5.06), CW - Inches(0.48), Inches(0.28),
          "踩过的三个坑（也是这轮最实在的收获）", font_size=11.5, bold=True, color=AMBER)
 pit = [
     "① 别名闭环：入库侧给院校加了别名，查询侧却忘了归一化，评测时 Imperial 这类裸简称直接匹配不上、掉出召回 —— "
-    "补 query_norm.py 做查询侧归一化后，对抗集 HitRate 从 93.3% 变成 100%。",
+    "补 query_norm.py 做查询侧归一化后，对抗集 15 条全部命中正确文档（HitRate@8 = 100%）。",
     "② 兼容端点不是万能的：OpenAI 兼容接口在中文批量 embedding 上返回 400，最终把嵌入改走 DashScope 原生 SDK，主链路仍保留兼容端点。",
     "③ 真跑过并发：三个 worker 并发打开同一个 Chroma 会报租户错误（Could not connect to tenant default_tenant）—— "
     "改成模块级单例 + threading.Lock，锁只护首次构造，之后查询是只读。",
@@ -1269,7 +1280,7 @@ cols = [
     ]),
     ("后续工作", TEAL, EVID_BG, EVID_LINE, [
         "院校数据实时增量更新，替代当前离线快照",
-        "扩充国家 / 地区覆盖，突破当前的美英港新范围",
+        "扩充国家 / 地区覆盖，提升非美地区的数据密度",
         "多轮上下文：如扩展到多用户 / 长期陪伴场景，接入持久化 checkpointer",
         "补充人工评测，用人工打分校验自动指标的可靠性",
     ]),
