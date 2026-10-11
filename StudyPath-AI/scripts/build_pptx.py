@@ -352,8 +352,8 @@ add_footer(s, 3)
 
 add_rect(s, M, Inches(1.72), CW, Inches(1.02), fill=CARD_BG2, line_rgb=ACCENT)
 add_text(s, M + Inches(0.26), Inches(1.85), CW - Inches(0.52), Inches(0.8),
-         "做一个「回答的每个事实都能点开原始来源」的留学规划助手：\n"
-         "把自然语言画像结构化，用真实数据检索出依据，再由多个领域角色分别推理、汇总成一份可执行的申请规划。",
+         "做一个端到端完成留学申请规划的助手：\n"
+         "把自然语言画像结构化，用真实数据检索出选校依据，再由多个领域角色分域推理，汇总成一份可执行的申请规划。每条事实均可点开原始来源核对。",
          font_size=12.5, color=NAVY, bold=True, line_spacing=1.3)
 
 add_text(s, M, Inches(2.96), Inches(6), Inches(0.3),
