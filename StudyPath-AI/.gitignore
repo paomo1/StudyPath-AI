@@ -36,3 +36,11 @@ node_modules/
 # ===== 系统 =====
 .DS_Store
 Thumbs.db
+
+# ===== 脚本运行产物（可随时重跑，不进版本库）=====
+/prompt_ab_out.txt
+/prompt_ab_report.md
+/prompt_ab_agent_out.txt
+/prompt_ab_agent_report.md
+/style_audit_report.md
+/style_audit_raw.txt

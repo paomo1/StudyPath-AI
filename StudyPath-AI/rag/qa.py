@@ -24,14 +24,24 @@ from config import (
 from dashscope_embeddings import DashScopeEmbeddings
 from query_norm import normalize_query  # 查询侧学校别名归一化（修 "Imperial" 类裸别名召回失败）
 
-PROMPT = ChatPromptTemplate.from_template(
+# 语体规则：LoRA 实验的蒸馏结论——表达范式可以从权重层迁移到 prompt 层。
+# 独立成常量，是为了让对照实验能精确摘掉这一段、其余逐字不动；
+# 若把规则直接写进模板字符串，测试脚本就只能复制一份旧模板，两边必然漂移。
+STYLE_RULE = (
+    '3. 面向具体申请者说话，像顾问给建议一样直接给结论；不要写"在数字化浪潮席卷全球的今天"\n'
+    '   这类宏观铺垫式开场，也不要写成泛泛而谈的通用说明文。\n'
+)
+
+PROMPT_TEMPLATE = (
     """你是 StudyPath，一个留学申请规划助手。请严格基于下面的【检索到的资料】回答用户问题。
 
 规则：
 1. 只能使用资料中的事实，绝对不要编造院校、排名、分数或案例。
 2. 如果资料不足以回答，明确说"资料中暂无相关信息"，并建议用户补充哪类数据。
-3. 用中文回答，条理清晰，必要时分点。
-4. 回答末尾附上引用来源（资料里的 source_url 或来源说明），方便用户核实。
+"""
+    + STYLE_RULE
+    + """4. 用中文回答，条理清晰，必要时分点。
+5. 回答末尾附上引用来源（资料里的 source_url 或来源说明），方便用户核实。
 
 【检索到的资料】
 {context}
@@ -42,6 +52,8 @@ PROMPT = ChatPromptTemplate.from_template(
 【回答】
 """
 )
+
+PROMPT = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 
 
 def format_docs(docs):

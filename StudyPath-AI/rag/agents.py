@@ -107,6 +107,39 @@ def _dedup_docs(docs: List[Document]) -> List[Document]:
     return out
 
 
+def _remap_citations(text: str, docs: List[Document], url2gidx: dict) -> str:
+    """把 worker 结论里的本库编号 [资料i] 重映射为全局编号。
+
+    worker 看到的是自己那一路文档（编号从 1 起），整合器看到的是三库合并去重后的
+    编号，两套编号本来对不上——不改的话，答案里的 [资料N] 和底部来源卡片是两张皮。
+    重映射后同一份资料在全文只有一个编号，来源卡片才点得准。
+    """
+    def repl(m):
+        i = int(m.group(1))
+        if not (1 <= i <= len(docs)):
+            return ""                                  # 越界编号直接丢掉
+        url = docs[i - 1].metadata.get("source_url") or ""
+        g = url2gidx.get(url)
+        return "[资料%d]" % g if g else ""
+    return re.sub(r"\[资料(\d+)\]", repl, text)
+
+
+# worker 也要吃同一条语体约束：它们输出的是给整合器消费的「专家结论」，
+# 若这一层就写成通用说明文，整合器拿到的原料已经是那个腔调，最终答复很难掰回来。
+WORKER_STYLE_RULE = (
+    "表达上用顾问口吻面向申请者，直接给结论；"
+    "不要写「在数字化浪潮席卷全球的今天」这类宏观铺垫式开场，不要泛泛而谈或写成通用说明文。"
+)
+
+# worker 层的院校口径：只认本库确实检索到的院校。
+# 起因是实跑里出现过「拿清单外的知名院校当论据、还给它编了语言分要求」，
+# 检索没错，是专家在结论里顺手补了资料里没有的常识。
+WORKER_FACT_RULE = (
+    "只允许引用【检索资料】中实际出现的院校；不得为资料之外的院校"
+    "(包括你熟知的知名院校)给出语言成绩、截止日期、学费等要求数值。"
+    "用户提到的院校若资料中没有，明确写「知识库未收录该校」，不要用常识补齐。"
+)
+
 # 三个 worker 各自的"专家人设 + 业务动作"——这是相对纯 RAG 的核心亮点
 WORKER_ROLE_PROMPTS = {
     "school": (
@@ -117,6 +150,8 @@ WORKER_ROLE_PROMPTS = {
         "3. 每所院校给出匹配理由(为什么适合用户)；\n"
         "4. 标注关键信息：截止日期、学费、语言要求、核心课程(仅用资料中明确写出的字段)。\n"
         "只使用【检索资料】中明确出现的院校与字段，严禁引入资料外的学校、项目名称、阈值或建议。绝不编造。中文、条理清晰，用「### 小标题 + 列表」组织。"
+        + WORKER_STYLE_RULE
+        + WORKER_FACT_RULE
     ),
     "admission": (
         "你是录取风险评估师。基于【检索资料】中的真实录取/拒信案例，评估用户的申请竞争力。\n"
@@ -126,6 +161,8 @@ WORKER_ROLE_PROMPTS = {
         "3. 指出用户的背景短板与风险点；\n"
         "4. 给出补齐建议(如补科研、刷分、换项目)，且建议必须基于资料中出现过的案例/院校。\n"
         "只使用【检索资料】中明确出现的案例与字段，严禁引入资料外的案例、学校或阈值。中文、条理清晰。"
+        + WORKER_STYLE_RULE
+        + WORKER_FACT_RULE
     ),
     "essay": (
         "你是文书规划师。基于【检索资料】中的真实文书范例，为用户规划申请文书。\n"
@@ -134,7 +171,11 @@ WORKER_ROLE_PROMPTS = {
         "2. 拆解这个范文的写作结构(开头→学术经历→科研/实习→职业规划→结尾)；\n"
         "3. 输出可填充的文书大纲(各段落要点)；\n"
         "4. 列出用户需要准备的素材清单。\n"
-        "只使用【检索资料】中明确出现的范文与字段，严禁引入资料外的范文或写法。中文、条理清晰。"
+        "只使用【检索资料】中明确出现的范文与字段，严禁引入资料外的范文或写法。"
+        "范文所属院校的校名、教授姓名、课程编号写进结论会把整合器带偏：这些一律不要出现在你的结论里，"
+        "只描述写作结构与可迁移的写法。中文、条理清晰。"
+        + WORKER_STYLE_RULE
+        + WORKER_FACT_RULE
     ),
 }
 
@@ -144,6 +185,264 @@ CONCL_FIELD = {
     "admission": "admission_risk",
     "essay": "essay_outline",
 }
+
+# ---- 语体约束：LoRA 实验的蒸馏结论 ----
+# 实验①证明「面向具体人说话、不写宏观铺垫」这种表达范式可以跨模型迁移。
+# 这里把它固化成 prompt 规则，替代挂 adapter 的权重方案（零成本、可随时改）。
+# 抽成常量是为了可测：对照实验构造「旧版」= 拼好的 prompt 里删掉这一段。
+SYNTH_STYLE_RULE = (
+    "【语体要求】以顾问口吻面向具体申请者，直接给出可执行的建议；"
+    "不要写「在数字化浪潮席卷全球的今天」这类宏观铺垫式开场，不要泛泛而谈或写成通用说明文。"
+)
+
+FOLLOWUP_RULE = (
+    "\n\n【多轮追问模式】检测到这是对话追问(上一轮已有答案)。用户当前问题"
+    "只关心某个具体信息点(如截止日期 / 学费 / 材料 / 排名等)。请直接针对该信息点"
+    "给出答案，并明确引用上一轮提到的具体实体(学校名、项目名)；"
+    "不要重复输出完整的阶段1-5规划模板，也不要重新推荐学校。"
+    "若专家结论未覆盖用户问的字段，明确写『知识库未检索到该字段』，不要编造。"
+)
+
+# ---- 一致性自检：专治「同一份输出里前后不一致」 ----
+# 实跑里抓到的三类自相矛盾（都在同一份规划内）：阶段1 说某校语言达标、阶段2 又说
+# 该校要求更高分；阶段1 列 5 所、阶段5 写「当前 3 所」；同一院校的 [资料N] 前后对不上。
+# 检索层没错，是整合器落笔前没把三路结论对齐。
+CONSISTENCY_RULE = (
+    "\n\n【一致性自检·仅内部】以下内容只供你自查，任何一句都不许出现在答案里：\n"
+    "动笔前核对三项，冲突时以选校那一份结论为准，核对结果直接体现在正文，不要复述过程：\n"
+    "1. 院校清单：全文各阶段只允许出现选校清单内的院校；专家结论里若出现清单外的院校"
+    "(常见于范文所属院校、案例所属院校)，一律改写为不点名的通用表述或直接删去，不得保留校名。"
+    "尤其是阶段3：范文出自哪所学校，只写「范文」或「目标项目」，绝不写出该校校名、教授姓名、课程编号。"
+    "同一所院校的语言成绩、截止日期、学费在全文只允许有一组数字。\n"
+    "2. 数量口径：凡提到院校所数，必须等于清单里实际列出的院校条数。\n"
+    "3. 引用形式：全文只用 [资料N] 表示引用，N 必须是单个数字(如 [资料3])。"
+    "不得写成区间 [资料1-7]、不得并列多个编号，更不得写成 [资料中录取评估部分] 这类文字引用；"
+    "一句话引用多条资料，就连续写多个 [资料N]。\n"
+    "【禁止出现的字样】选校策略结论、录取风险评估结论、文书规划结论、可引用来源——"
+    "这几个词以及任何方括号包裹的板块名都不得出现在答案中；"
+    "也不要写「口径一致」「已核对编号」「以…为准」这类自查用语。"
+)
+
+
+def time_rule(today=None) -> str:
+    """时间口径：把「今天」注入 prompt，让模型知道哪些资料是往季的。
+
+    抽成函数（而不是内联字符串）是为了让日期可被参数覆盖，方便测试与对照实验。
+
+    规则只允许「原样引用 + 加标注」，并给了反例——实测模型会把 2025 的截止日
+    顺手改成 2026 让它看起来更新，等同于篡改原文，必须用具体例子堵死。
+    """
+    from datetime import date
+    d = today or date.today()
+    return (
+        "\n\n【数据时效】当前日期为 %s。资料里的日期与年份一律原样引用："
+        "资料写 2025-12-15 就必须写 2025-12-15，不得改成 2026-12-15；"
+        "资料没写年份就不许自己补年份。特别注意：资料里的截止日常写成「Dec 15 (Fall)」"
+        "「Feb 1 (Fall)」这类不带年份的形式，这是正常的(Fall 截止日每年相同)。"
+        "遇到这类值必须原样照抄，一个字都不许加年份，也不许据此推算「X月X日前完成」这类前置日期；"
+        "只有资料本身写了年份时(如「Jan 6, 2026」)，才可以带上那个年份。"
+        "若某日期早于当前日期，只能原样写出并在其后标注"
+        "「（往季参考，以官网为准）」，不得把它当成即将到来的待办写进倒排表。"
+        "若全部院校的截止日期都早于当前日期，说明知识库整体是往季数据：阶段4 不要再罗列"
+        "具体日期与「X月X日前完成」这类倒排节点，改为按「各校截止日前 2–3 周完成提交」"
+        "的相对规则表述，并在该阶段开头声明一句「知识库收录的截止日为 20XX 申请季，最新信息以官网为准」。"
+        "全文不要同时出现两个不同的申请季年份。" % d.isoformat()
+    )
+
+
+def synth_system_prompt(is_followup: bool, today=None) -> str:
+    """整合器的 system prompt 全文。
+
+    抽成函数而非内联字符串，是为了让对照实验能精确地「只摘掉语体那一段」，
+    其余逐字不变——否则两段 prompt 各自维护，差异就不再是唯一变量。
+    """
+    followup_rule = FOLLOWUP_RULE if is_followup else ""
+    return (
+        "你是 StudyPath 留学规划整合器。你已收到三位专家的结构化结论：\n"
+        "选校策略(冲刺/稳妥/保底)、录取风险评估(定位/风险点)、文书规划(结构/大纲)。\n"
+        "请将其整合为一份【可执行的留学申请规划】，严格按时间轴组织：\n"
+        "阶段1 选校定稿 → 阶段2 材料准备 → 阶段3 文书写作 → "
+        "阶段4 网申提交(含截止日期checklist) → 阶段5 面试准备。\n"
+        "每个阶段给出关键任务与优先级。严格基于专家结论，不要补充专家结论之外的信息；\n"
+        "若【文书规划结论】为空(essay worker 未命中)，阶段3 文书写作需明确标注『未检索到同方向范文，以下为通用写作框架』，不得伪装成来自知识库。\n"
+        "引用资料时用 [资料N] 标注。中文，用「### 阶段N + 列表」组织。\n"
+        "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，"
+        "一律用「### 小标题 + 无序列表(- 要点)」组织；"
+        "不要使用 <br>/<br/> 标签，需换行直接用真实换行符；"
+        "只引用资料中明确写出的字段名，不要自行发明字段名；"
+        "引用资料时用 [资料N] 标注，N 来自资料块开头的编号。"
+        + SYNTH_STYLE_RULE
+        + CONSISTENCY_RULE
+        + time_rule(today)
+        + followup_rule
+    )
+
+
+# ---------------------------------------------------------------- 门槛核对
+# 整合器最容易犯的错不是措辞，而是「为了给出建议而自己造论据」：
+# 实测它会写出「资料明确指出 Cambridge 不设授课型 CS 硕士」这类资料里根本没有的结论，
+# 也会把用户雅思 7.0 不达标的学校直接放进冲刺档。这类问题 prompt 措辞只能压低概率，
+# 不能消除——所以这里改用确定性代码，先把「用户条件 vs 清单内每校门槛」算一遍，
+# 结果作为只读事实块喂给整合器，同时给出院校白名单。
+#
+# 设计原则：能算出可比数值才下结论；算不出来（英式 2:1、双口径混写）一律标
+# 「需人工核对」，绝不猜——宁可让答案说"这里要你自己确认"，也不能给错的门槛。
+
+def _first_num(text):
+    """取文本里第一个数字，取不到返回 None。'7.0 (6.5)' -> 7.0"""
+    m = re.search(r"\d+(?:\.\d+)?", str(text or ""))
+    return float(m.group(0)) if m else None
+
+
+def _parse_gpa_min(text):
+    """把院校 gpa_min 的自由文本解析成 (量纲, 阈值)。
+
+    量纲取 'scale4' / 'scale100'；返回 (None, None) 表示该字段无法自动核对。
+    英式学位等级（2:1 / First class）与「4 分制、百分制混写」都归入不可核对，
+    因为它们和用户自报的 GPA 之间没有可靠的换算关系。
+    """
+    s = str(text or "").strip()
+    if not s:
+        return (None, None)
+    if re.search(r"(2:1|first\s*class|second\s*class|high\s*2)", s, re.I) and "/" not in s:
+        return (None, None)
+    m100 = re.search(r"(\d{2,3})\s*(?:%|/100)", s)
+    m4 = (re.search(r"(\d\.\d+)\s*/\s*4(?:\.0)?", s)
+          or re.search(r"(?<![\d.])(\d\.\d+)(?![\d])", s))
+    if m100 and m4:
+        return (None, None)              # 同时给了两种口径，无法唯一确定
+    if m100:
+        return ("scale100", float(m100.group(1)))
+    if m4:
+        return ("scale4", float(m4.group(1)))
+    mn = re.search(r"(\d{2,3})", s)
+    if mn:
+        return ("scale100", float(mn.group(1)))
+    return (None, None)
+
+
+def _profile_scale(gpa_num, raw):
+    """判断用户自报 GPA 是 4 分制还是百分制。"""
+    s = str(raw or "")
+    if "%" in s or "/100" in s:
+        return "scale100"
+    if "/4" in s:
+        return "scale4"
+    return "scale4" if gpa_num <= 4.0 else "scale100"
+
+
+def _extract_profile(query: str) -> dict:
+    """从用户问题里抽硬性条件（GPA / 雅思 / 托福）。
+
+    只做一次轻量 JSON 抽取，抽不到就返回 {}，调用方据此跳过核对——
+    没有条件时必须什么都不说，而不是补一个默认值去比。
+    """
+    try:
+        sys = SystemMessage(content=(
+            "从用户问题中抽取留学申请的硬性条件，只返回 JSON，不要任何解释。"
+            '格式：{"gpa": "...", "gpa_scale": "4或100", "ielts": "...", "toefl": "..."}。'
+            "gpa 填用户原话里的数值（如 3.6 或 85），gpa_scale 填 4 或 100；"
+            "ielts/toefl 填总分。用户没提到的字段填 null，不要猜测、不要给默认值。"
+        ))
+        resp = llm.invoke([sys, HumanMessage(content=query)])
+        d = json.loads(_extract_json(resp.content))
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def _gate_check(profile: dict, school_docs: List[Document]):
+    """逐校比对用户自报条件与资料原文门槛，返回 (事实块文本, 未达标校名列表)。"""
+    if not profile or not school_docs:
+        return ("", [])
+    g_raw = profile.get("gpa")
+    ielts_u = _first_num(profile.get("ielts"))
+    toefl_u = _first_num(profile.get("toefl"))
+    g_u = _first_num(g_raw)
+    u_scale = _profile_scale(g_u, g_raw) if g_u is not None else None
+
+    lines, fails = [], set()
+    for d in school_docs:
+        name = d.metadata.get("school_name") or ""
+        m = re.search(r"最低申请要求：GPA (.*?)，托福 (.*?)，雅思 (.*?)，GRE",
+                      d.page_content or "")
+        if not m:
+            continue
+        g_min_txt, t_min_txt, i_min_txt = m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
+        verdicts = []
+
+        i_min = _first_num(i_min_txt)
+        if ielts_u is not None:
+            if not i_min_txt:
+                verdicts.append("资料未给雅思门槛")
+            elif i_min is None:
+                verdicts.append("雅思门槛「%s」需人工核对" % i_min_txt)
+            elif ielts_u < i_min:
+                verdicts.append("雅思未达标（要求 %s，用户 %s）" % (i_min_txt, profile.get("ielts")))
+                fails.add(name)
+            else:
+                verdicts.append("雅思达标（要求 %s）" % i_min_txt)
+
+        t_min = _first_num(t_min_txt)
+        if toefl_u is not None:
+            if not t_min_txt:
+                verdicts.append("资料未给托福门槛")
+            elif t_min is None:
+                verdicts.append("托福门槛「%s」需人工核对" % t_min_txt)
+            elif toefl_u < t_min:
+                verdicts.append("托福未达标（要求 %s，用户 %s）" % (t_min_txt, profile.get("toefl")))
+                fails.add(name)
+            else:
+                verdicts.append("托福达标（要求 %s）" % t_min_txt)
+
+        scale, thr = _parse_gpa_min(g_min_txt)
+        if not g_min_txt:
+            verdicts.append("资料未给 GPA 门槛")
+        elif u_scale and scale and thr is not None:
+            if u_scale != scale:
+                verdicts.append("GPA 门槛「%s」与用户口径不同，需人工核对" % g_min_txt)
+            elif g_u < thr:
+                verdicts.append("GPA 未达标（要求 %s，用户 %s）" % (g_min_txt, g_raw))
+                fails.add(name)
+            else:
+                verdicts.append("GPA 达标（要求 %s）" % g_min_txt)
+        else:
+            verdicts.append("GPA 门槛「%s」需人工核对" % g_min_txt)
+
+        lines.append("- %s（%s）：%s" % (name, d.metadata.get("program_name") or "", "；".join(verdicts)))
+
+    if not lines:
+        return ("", [])
+    head = "用户自报条件：" + "，".join([x for x in [
+        ("GPA %s" % g_raw) if g_raw else "",
+        ("雅思 %s" % profile.get("ielts")) if profile.get("ielts") else "",
+        ("托福 %s" % profile.get("toefl")) if profile.get("toefl") else "",
+    ] if x])
+    return (head + "\n" + "\n".join(lines), sorted(fails))
+
+
+def _gate_block(profile: dict, school_docs: List[Document]) -> str:
+    """门槛核对 + 院校白名单，合成一段只读事实块，拼到整合器 system prompt 末尾。"""
+    facts, fails = _gate_check(profile, school_docs)
+    names = []
+    for d in school_docs:
+        n = d.metadata.get("school_name") or ""
+        if n and n not in names:
+            names.append(n)
+    if not facts and not names:
+        return ""
+
+    parts = ["\n\n【系统预计算，以下为硬事实，不得改写、不得推翻】"]
+    if facts:
+        parts.append("门槛核对（代码逐校比对用户自报条件与资料原文）:\n" + facts)
+        if fails:
+            parts.append("未达标院校：" + "、".join(fails)
+                         + "。这些院校不得列入冲刺或稳妥档；若仍需保留，"
+                           "必须在该校后面显式写出「条件未达标，需先补齐」并给出补齐路径。")
+    if names:
+        parts.append("院校白名单（全文只允许出现以下院校名，范文与案例所属院校也不例外；"
+                     "白名单之外的院校名一律改写为不点名表述）:\n- " + "\n- ".join(names))
+    return "\n".join(parts)
 
 
 def _analyze(state: State, key: str, docs: List[Document]) -> str:
@@ -156,7 +455,7 @@ def _analyze(state: State, key: str, docs: List[Document]) -> str:
     sys = SystemMessage(content=role)
     user = HumanMessage(content=f"【检索资料】\n{context}\n\n【用户问题】\n{state['query']}\n\n【角色结论】")
     resp = llm.invoke([sys, user])        # 这次 LLM 调用 = 该 worker 的"业务思考"
-    return _clean_answer(resp.content)
+    return _clean_answer(resp.content, max_n=len(docs))   # 编号上限=本库资料数
 
 
 def _worker(state: State, key: str):
@@ -186,10 +485,6 @@ def synthesizer(state: State):
     三个 worker 已各自完成"业务思考"(选校策略 / 录取风险评估 / 文书规划)，
     这里只负责把它们按时间轴整合，不再重复读原始文档。
     """
-    plan = state.get("school_plan", "")
-    risk = state.get("admission_risk", "")
-    outline = state.get("essay_outline", "")
-
     # 来源(与 ask_multi 同样去重逻辑，保证 [资料N] 编号对齐)
     all_docs: List[Document] = []
     for key in ("school", "admission", "essay"):
@@ -198,47 +493,38 @@ def synthesizer(state: State):
     sources_text = "\n".join(
         f"[{i+1}] {d.metadata.get('source_url', '')}" for i, d in enumerate(deduped)
     )
+    # url -> 全局编号：worker 结论里的本库编号靠它换算成整合器的全局编号
+    url2gidx = {}
+    for i, d in enumerate(deduped, 1):
+        u = d.metadata.get("source_url") or ""
+        if u and u not in url2gidx:
+            url2gidx[u] = i
 
     sections = []
-    if plan:    sections.append("【选校策略结论】\n" + plan)
-    if risk:    sections.append("【录取风险评估结论】\n" + risk)
-    if outline: sections.append("【文书规划结论】\n" + outline)
+    for key, field, title in (("school", "school_plan", "选校策略结论"),
+                              ("admission", "admission_risk", "录取风险评估结论"),
+                              ("essay", "essay_outline", "文书规划结论")):
+        txt = state.get(field, "")
+        if txt:
+            sections.append(f"【{title}】\n"
+                            + _remap_citations(txt, state.get(f"{key}_docs", []), url2gidx))
     expert_text = "\n\n".join(sections)
 
     # 多轮追问检测：messages 里已有上一轮的助手答案，即说明本轮是对话追问。
     # add_messages reducer 保证历史跨 invoke 累积，故可直接从 state 判断。
     is_followup = any(getattr(m, "type", "") == "ai" for m in state.get("messages", []))
 
-    followup_rule = (
-        "\n\n【多轮追问模式】检测到这是对话追问(上一轮已有答案)。用户当前问题"
-        "只关心某个具体信息点(如截止日期 / 学费 / 材料 / 排名等)。请直接针对该信息点"
-        "给出答案，并明确引用上一轮提到的具体实体(学校名、项目名)；"
-        "不要重复输出完整的阶段1-5规划模板，也不要重新推荐学校。"
-        "若专家结论未覆盖用户问的字段，明确写『知识库未检索到该字段』，不要编造。"
-    ) if is_followup else ""
+    # 门槛核对只在有院校召回时才有意义；没有院校召回就不额外花一次 LLM 调用去抽条件
+    profile = _extract_profile(state["query"]) if state.get("school_docs") else {}
+    gate = _gate_block(profile, state.get("school_docs", []))
 
-    sys = SystemMessage(content=(
-        "你是 StudyPath 留学规划整合器。你已收到三位专家的结构化结论：\n"
-        "选校策略(冲刺/稳妥/保底)、录取风险评估(定位/风险点)、文书规划(结构/大纲)。\n"
-        "请将其整合为一份【可执行的留学申请规划】，严格按时间轴组织：\n"
-        "阶段1 选校定稿 → 阶段2 材料准备 → 阶段3 文书写作 → "
-        "阶段4 网申提交(含截止日期checklist) → 阶段5 面试准备。\n"
-        "每个阶段给出关键任务与优先级。严格基于专家结论，不要补充专家结论之外的信息；\n"
-        "若【文书规划结论】为空(essay worker 未命中)，阶段3 文书写作需明确标注『未检索到同方向范文，以下为通用写作框架』，不得伪装成来自知识库。\n"
-        "引用资料时用 [资料N] 标注。中文，用「### 阶段N + 列表」组织。\n"
-        "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，"
-        "一律用「### 小标题 + 无序列表(- 要点)」组织；"
-        "不要使用 <br>/<br/> 标签，需换行直接用真实换行符；"
-        "只引用资料中明确写出的字段名，不要自行发明字段名；"
-        "引用资料时用 [资料N] 标注，N 来自资料块开头的编号。"
-        + followup_rule
-    ))
+    sys = SystemMessage(content=synth_system_prompt(is_followup) + gate)
     user = HumanMessage(content=(
         f"{expert_text}\n\n【可引用来源】\n{sources_text}\n\n"
         f"【用户问题】\n{state['query']}\n\n【整合后的申请规划】"
     ))
     resp = llm.invoke([sys, user])
-    answer = _clean_answer(resp.content)
+    answer = _clean_answer(resp.content, max_n=len(deduped))
     return {"answer": answer, "messages": [AIMessage(content=answer)]}
 
 
@@ -259,12 +545,54 @@ def _tables_to_lists(text: str) -> str:
     return "\n".join(out)
 
 
-def _clean_answer(text):
-    """后处理兜底：清理标签、重复标题符号、markdown 表格、多余空行。"""
+def _normalize_citations(text: str, max_n=None) -> str:
+    """把模型偷懒写的区间/并列引用还原成逐个 [资料N]，并丢掉不存在的编号。
+
+    模型经常把 [资料1] [资料2] ... [资料7] 压成 [资料1-7] 或 [资料1-5,7]，
+    甚至写成 [资料中录取评估部分] 这类文字引用；更麻烦的是它会把知识库里的
+    case_024 / case_025 当成引用号，编出 [资料24] [资料25] 这种根本没来源的编号。
+    前者让"编号可逐条核对"失效，后者是伪引用。这里做确定性归一，不依赖模型自觉。
+    max_n 传当前可引用资料条数时，超出范围的编号会被删掉。
+    """
+    def repl(m):
+        body = m.group(1)
+        nums = []
+        for part in re.split(r"[,，、]", body):
+            part = part.strip()
+            rng = re.match(r"^(\d+)\s*[-–—~]\s*(\d+)$", part)
+            if rng:
+                a, b = int(rng.group(1)), int(rng.group(2))
+                if a <= b and b - a <= 30:      # 防御异常区间
+                    nums.extend(range(a, b + 1))
+            elif part.isdigit():
+                nums.append(int(part))
+        if max_n:
+            nums = [n for n in nums if 1 <= n <= max_n]
+        if not nums:
+            return m.group(0) if max_n is None else ""   # 编号不存在 → 删掉
+        seen, out = set(), []
+        for n in nums:
+            if n not in seen:
+                seen.add(n)
+                out.append("[资料%d]" % n)
+        return " ".join(out)
+    # 文字伪引用（如 [资料中…]）直接删除，它不是可核对的编号
+    text = re.sub(r"\[资料中[^\]]{0,24}\]", "", text)
+    return re.sub(r"\[资料([0-9,，、\-–—~\s]+)\]", repl, text)
+
+
+def _clean_answer(text, max_n=None):
+    """后处理兜底：清理标签、重复标题符号、markdown 表格、引用格式、多余空行。
+
+    max_n = 当前答案可引用的资料条数；传了就顺带校验 [资料N] 是否越界。
+    """
     text = text.replace("<br>", "\n").replace("<br/>", "\n").replace("<BR>", "\n")
     text = re.sub(r"#{2,}\s*#{2,}\s*", "### ", text)   # 修复 "### ### 阶段" 重复符号
+    text = _normalize_citations(text, max_n)             # 区间/并列/伪引用/越界编号归一
     text = re.sub(r"\]\[", "] [", text)                 # 修复 [资料1][资料2] 挤在一起 → [资料1] [资料2]
     text = _tables_to_lists(text)                        # 表格转列表，防渲染错乱
+    text = re.sub(r"\s+([，。；、])", r"\1", text)        # 清掉标点前多余空格
+    text = re.sub(r"(?<=\S) {2,}", " ", text)            # 行内连续空格压成一个（不动缩进）
     text = re.sub(r"[ \t]+\n", "\n", text)     # 清掉行尾空白
     text = re.sub(r"\n{3,}", "\n\n", text)     # 合并 >2 个连续空行为 1 个
     return text.strip()

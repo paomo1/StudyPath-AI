@@ -164,8 +164,11 @@ def main():
     import sys
     argv = sys.argv[1:]
     only = int(argv[argv.index("--only") + 1]) if "--only" in argv else None
+    # 允许覆盖源文件与输出路径：正式 pptx 被 PowerPoint 占用时，可先用临时文件出预览
+    src = Path(argv[argv.index("--src") + 1]) if "--src" in argv else PPTX
+    out = Path(argv[argv.index("--out") + 1]) if "--out" in argv else OUT
 
-    prs = Presentation(str(PPTX))
+    prs = Presentation(str(src))
     W, H = px(prs.slide_width), px(prs.slide_height)
     pages = [render_slide(s, i) for i, s in enumerate(prs.slides, 1)]
 
@@ -192,13 +195,13 @@ def main():
     if only:
         # 单页导出：贴边铺满窗口，供 headless 截图逐页核对
         single_css = "body{padding:0;background:#fff}.page{margin:0;box-shadow:none}.num{display:none}"
-        dst = OUT.with_name("_preview_p%02d.html" % only)
+        dst = out.with_name("_preview_p%02d.html" % only)
         dst.write_text(wrap(pages[only - 1], single_css), encoding="utf-8")
         print("Saved single page:", dst)
         return
 
-    OUT.write_text(wrap("\n".join(pages)), encoding="utf-8")
-    print("Saved:", OUT, "slides:", len(pages), "px:", int(W), "x", int(H))
+    out.write_text(wrap("\n".join(pages)), encoding="utf-8")
+    print("Saved:", out, "slides:", len(pages), "px:", int(W), "x", int(H))
 
 
 if __name__ == "__main__":

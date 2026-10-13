@@ -26,16 +26,32 @@ if (-not (Test-Path $entry)) {
     exit 1
 }
 
-# ---- 2. 找 Python：环境变量 > PATH 里的 python > 常见 conda 环境 ----
-function Resolve-Python {
-    if ($env:STUDYPATH_PY -and (Test-Path $env:STUDYPATH_PY)) {
-        return $env:STUDYPATH_PY
+# ---- 2. 找 Python：能不能跑起来，看它有没有装 gradio ----
+# 只看「PATH 里的 python」不够用：Anaconda 的 base 环境也提供 python 命令，
+# 但 base 里通常没装项目依赖，直接跑就是 ModuleNotFoundError: No module named 'gradio'。
+# 所以这里不看名字看能力 —— 逐个候选试 import gradio，第一个能成功的才用。
+function Test-PythonHasGradio([string]$pyPath) {
+    if (-not $pyPath -or -not (Test-Path $pyPath)) { return $false }
+    $oldEap = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        & $pyPath -c "import gradio" 2>$null | Out-Null
+        return ($LASTEXITCODE -eq 0)
+    } catch {
+        return $false
+    } finally {
+        $ErrorActionPreference = $oldEap
     }
+}
+
+function Resolve-Python {
+    $cands = @()
+    if ($env:STUDYPATH_PY) { $cands += $env:STUDYPATH_PY }
 
     $onPath = Get-Command python -ErrorAction SilentlyContinue
-    if ($onPath) { return $onPath.Source }
+    if ($onPath) { $cands += $onPath.Source }
 
-    # 退而求其次：扫 conda 常见安装位置下的 AI 环境
+    # 常见 conda 安装位置下的 AI 环境
     $condaRoots = @(
         (Join-Path $env:USERPROFILE "anaconda3"),
         (Join-Path $env:USERPROFILE "miniconda3"),
@@ -44,18 +60,22 @@ function Resolve-Python {
     )
     foreach ($root in $condaRoots) {
         foreach ($envName in @("ai-base", "ai-langchain")) {
-            $cand = Join-Path $root "envs\$envName\python.exe"
-            if (Test-Path $cand) { return $cand }
+            $cands += (Join-Path $root "envs\$envName\python.exe")
         }
+    }
+
+    foreach ($c in $cands) {
+        if (Test-PythonHasGradio $c) { return $c }
     }
     return $null
 }
 
 $py = Resolve-Python
 if (-not $py) {
-    Write-Host "❌ 没找到可用的 Python。" -ForegroundColor Red
-    Write-Host "   先手动指定，例如：" -ForegroundColor Yellow
-    Write-Host '   $env:STUDYPATH_PY = "C:\Users\你\anaconda3\envs\ai-base\python.exe"' -ForegroundColor Yellow
+    Write-Host "❌ 没找到装了 gradio 的 Python。" -ForegroundColor Red
+    Write-Host "   多半是当前 python 落在 Anaconda 的 base 环境（没装项目依赖）。二选一：" -ForegroundColor Yellow
+    Write-Host '   1) conda activate ai-base 之后再跑本脚本' -ForegroundColor Yellow
+    Write-Host '   2) 或写死路径：$env:STUDYPATH_PY = "C:\Users\13656\anaconda3\envs\ai-base\python.exe"' -ForegroundColor Yellow
     exit 1
 }
 
