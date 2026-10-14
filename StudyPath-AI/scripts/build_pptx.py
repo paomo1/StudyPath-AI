@@ -1022,7 +1022,8 @@ add_text(s, M + Inches(0.24), Inches(5.78), CW - Inches(0.48), Inches(0.44),
          "因此本项目不把模型参数作为事实依据，而由检索层提供事实证据，并要求最终回答与检索资料保持一致。",
          font_size=10, bold=True, color=TEAL, line_spacing=1.22)
 add_text(s, M + Inches(0.24), Inches(6.26), CW - Inches(0.48), Inches(0.26),
-         "边界声明：当前系统的字段一致性核查为抽样核验（3 条），尚未实现逐项自动事实校验。",
+         "边界声明：门槛与截止日已改为确定性注入（逐校硬比对、按原文清单照抄，不靠模型自觉）；"
+         "生成后的自动回查校验尚未实现，字段一致性核查仍为抽样核验（3 条）。",
          font_size=8.6, color=T_MUTED)
 add_text(s, M + Inches(0.24), Inches(6.54), CW - Inches(0.48), Inches(0.4),
          "工程落地：实验①得到的表达范式已蒸馏为 prompt 规则，固化进主链三段（单链检索 / 3 个 worker / 整合器）；"

@@ -44,3 +44,7 @@ Thumbs.db
 /prompt_ab_agent_report.md
 /style_audit_report.md
 /style_audit_raw.txt
+
+# verify_mainchain.py 跑批产物（自动断言日志，可随时重跑）
+/scripts/verify_mainchain_out.txt
+/scripts/verify_mainchain_out.json
