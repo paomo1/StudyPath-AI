@@ -127,7 +127,7 @@ def _remap_citations(text: str, docs: List[Document], url2gidx: dict) -> str:
 # worker 也要吃同一条语体约束：它们输出的是给整合器消费的「专家结论」，
 # 若这一层就写成通用说明文，整合器拿到的原料已经是那个腔调，最终答复很难掰回来。
 WORKER_STYLE_RULE = (
-    "表达上用顾问口吻面向申请者，直接给结论；"
+    "表达上用顾问口吻面向申请者，直接给结论；称呼申请者一律用「你」，不要用「您」；"
     "不要写「在数字化浪潮席卷全球的今天」这类宏观铺垫式开场，不要泛泛而谈或写成通用说明文。"
 )
 
@@ -192,6 +192,7 @@ CONCL_FIELD = {
 # 抽成常量是为了可测：对照实验构造「旧版」= 拼好的 prompt 里删掉这一段。
 SYNTH_STYLE_RULE = (
     "【语体要求】以顾问口吻面向具体申请者，直接给出可执行的建议；"
+    "称呼申请者一律用「你」，不要用「您」；"
     "不要写「在数字化浪潮席卷全球的今天」这类宏观铺垫式开场，不要泛泛而谈或写成通用说明文。"
 )
 
@@ -235,26 +236,39 @@ def time_rule(today=None) -> str:
     from datetime import date
     d = today or date.today()
     return (
-        "\n\n【数据时效】当前日期为 %s。资料里的日期与年份一律原样引用："
+        "\n\n【数据时效】当前日期为 %s。"
+        "判断「最新」「当前申请季」一律以该日期为锚，不得以资料中出现的最大年份为锚；"
+        "截止日期已早于该日期的记录属于往季，不得称作「最新」。"
+        "若用户在问题中说明了目标入学时间或申请季（如「2027 Fall 入学」），以用户所说的为准；"
+        "用户未说明时，以当前日期为锚判断最近一个可申请季节，并说明知识库是否覆盖该季节。"
+        "资料里的日期与年份一律原样引用："
         "资料写 2025-12-15 就必须写 2025-12-15，不得改成 2026-12-15；"
         "资料没写年份就不许自己补年份。特别注意：资料里的截止日常写成「Dec 15 (Fall)」"
         "「Feb 1 (Fall)」这类不带年份的形式，这是正常的(Fall 截止日每年相同)。"
         "遇到这类值必须原样照抄，一个字都不许加年份，也不许据此推算「X月X日前完成」这类前置日期；"
         "只有资料本身写了年份时(如「Jan 6, 2026」)，才可以带上那个年份。"
         "若某日期早于当前日期，只能原样写出并在其后标注"
-        "「（往季参考，以官网为准）」，不得把它当成即将到来的待办写进倒排表。"
-        "若全部院校的截止日期都早于当前日期，说明知识库整体是往季数据：阶段4 不要再罗列"
-        "具体日期与「X月X日前完成」这类倒排节点，改为按「各校截止日前 2–3 周完成提交」"
-        "的相对规则表述，并在该阶段开头声明一句「知识库收录的截止日为 20XX 申请季，最新信息以官网为准」。"
-        "全文不要同时出现两个不同的申请季年份。" % d.isoformat()
+        "「（往季参考，以官网为准）」，倒排表中可以保留该日期，但必须带上这个标注。"
+        "若资料中带年份的截止日期均早于当前日期（即知识库未覆盖当前申请季），说明知识库整体是往季数据："
+        "阶段4 可以照常列出各校截止日与提交节点，但每一条末尾都必须标注「（往季参考，以官网为准）」，"
+        "并在该阶段开头声明一句「知识库收录的截止日为 20XX 申请季，最新信息以官网为准」，"
+        "同时给出「各校截止日前 2–3 周完成提交」这类相对节奏。"
+        "【写法一致】阶段4 引用的截止日，日期本身的写法必须与阶段1 逐字一致："
+        "阶段1 写成不带年份的（如「Dec 15 (Fall)」），阶段4 也必须不带年份，严禁补一个年份；"
+        "阶段1 带年份的（如「Jan 6, 2026」）才带。「（往季参考，以官网为准）」是附加说明，不算写法不一致。"
+        "同一所院校的截止日在全文只允许一种写法。全文不要同时出现两个不同的申请季年份。" % d.isoformat()
     )
 
 
-def synth_system_prompt(is_followup: bool, today=None) -> str:
+def synth_system_prompt(is_followup: bool, today=None, facts: str = "") -> str:
     """整合器的 system prompt 全文。
 
     抽成函数而非内联字符串，是为了让对照实验能精确地「只摘掉语体那一段」，
     其余逐字不变——否则两段 prompt 各自维护，差异就不再是唯一变量。
+
+    facts：确定性事实块（门槛核对 + 截止日期原文清单），由调用方算好后传入，
+    插在角色说明之后、行为规则之前。语体规则固定在**最末尾**——实测规则全堆在
+    后面时，夹在中间的语体要求会被稀释，人称会退回客服腔的「您」。
     """
     followup_rule = FOLLOWUP_RULE if is_followup else ""
     return (
@@ -266,15 +280,16 @@ def synth_system_prompt(is_followup: bool, today=None) -> str:
         "每个阶段给出关键任务与优先级。严格基于专家结论，不要补充专家结论之外的信息；\n"
         "若【文书规划结论】为空(essay worker 未命中)，阶段3 文书写作需明确标注『未检索到同方向范文，以下为通用写作框架』，不得伪装成来自知识库。\n"
         "引用资料时用 [资料N] 标注。中文，用「### 阶段N + 列表」组织。\n"
-        "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，"
+        + (facts + "\n" if facts else "")
+        + "【格式铁律】不要使用 markdown 表格(单元格内换行会显示错乱)，"
         "一律用「### 小标题 + 无序列表(- 要点)」组织；"
         "不要使用 <br>/<br/> 标签，需换行直接用真实换行符；"
         "只引用资料中明确写出的字段名，不要自行发明字段名；"
         "引用资料时用 [资料N] 标注，N 来自资料块开头的编号。"
-        + SYNTH_STYLE_RULE
         + CONSISTENCY_RULE
         + time_rule(today)
         + followup_rule
+        + SYNTH_STYLE_RULE
     )
 
 
@@ -434,15 +449,50 @@ def _gate_block(profile: dict, school_docs: List[Document]) -> str:
 
     parts = ["\n\n【系统预计算，以下为硬事实，不得改写、不得推翻】"]
     if facts:
-        parts.append("门槛核对（代码逐校比对用户自报条件与资料原文）:\n" + facts)
+        parts.append("门槛核对（代码逐校比对用户自报条件与资料原文）:\n" + facts
+                     + "\n以上每所院校的门槛值只能引用该校资料里自己写出的内容——"
+                       "不得把其他院校的门槛、录取平均值或备注挪到该校名下"
+                       "（实测出现过把 NYU 的「录取平均3.6」写进 USC 的门槛理由）。")
         if fails:
             parts.append("未达标院校：" + "、".join(fails)
                          + "。这些院校不得列入冲刺或稳妥档；若仍需保留，"
                            "必须在该校后面显式写出「条件未达标，需先补齐」并给出补齐路径。")
     if names:
         parts.append("院校白名单（全文只允许出现以下院校名，范文与案例所属院校也不例外；"
-                     "白名单之外的院校名一律改写为不点名表述）:\n- " + "\n- ".join(names))
+                     "白名单之外的院校名一律改写为不点名表述，"
+                     "连同它们的教授姓名、课程编号、实验室名一并不得出现）:\n- " + "\n- ".join(names))
     return "\n".join(parts)
+
+
+def _deadline_block(school_docs: List[Document]) -> str:
+    """把院校资料里的 deadline 原文抽成只读清单，注入整合器。
+
+    deadline 在这条链上被改写两次（worker 先简化成一句话，整合器再"生成"一个
+    整齐的日期），实测 8 条里 7 条与原文对不上：Imperial 的 Oct 15 原文里不存在，
+    Rolling 是从另一所学校串过来的，SNU 的日期挂到了 UW 的值上。
+    做法与门槛核对一致——不给模型生成空间，只给复制素材。
+    """
+    rows, seen = [], set()
+    for d in school_docs:
+        name = d.metadata.get("school_name") or ""
+        m = re.search(r"申请截止：(.*?)。", d.page_content or "")
+        val = m.group(1).strip() if m else ""
+        if not name or not val:
+            continue
+        key = (name, val)
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append((name, d.metadata.get("program_name") or "", val))
+    if not rows:
+        return ""
+    lines = ["- %s（%s）：%s" % (n, p, v) for n, p, v in rows]
+    return ("\n\n【截止日期原文清单，以下为硬事实，不得改写】\n"
+            "凡是提到下列院校的申请截止日期，必须逐字复制对应值：不许自己生成日期，"
+            "不许把某校的日期挪给另一校，也不许改用清单外的日期。"
+            "清单里没写年份的，输出里同样不写年份；日期已早于今天的，"
+            "在给出日期后补「（往季参考，以官网为准）」即可，不必因此删掉日期。\n"
+            + "\n".join(lines))
 
 
 def _analyze(state: State, key: str, docs: List[Document]) -> str:
@@ -516,9 +566,10 @@ def synthesizer(state: State):
 
     # 门槛核对只在有院校召回时才有意义；没有院校召回就不额外花一次 LLM 调用去抽条件
     profile = _extract_profile(state["query"]) if state.get("school_docs") else {}
-    gate = _gate_block(profile, state.get("school_docs", []))
+    facts = (_gate_block(profile, state.get("school_docs", []))
+             + _deadline_block(state.get("school_docs", [])))
 
-    sys = SystemMessage(content=synth_system_prompt(is_followup) + gate)
+    sys = SystemMessage(content=synth_system_prompt(is_followup, facts=facts))
     user = HumanMessage(content=(
         f"{expert_text}\n\n【可引用来源】\n{sources_text}\n\n"
         f"【用户问题】\n{state['query']}\n\n【整合后的申请规划】"
